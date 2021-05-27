@@ -2,7 +2,7 @@ import importlib
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('../nasa_ilab_eis'))
+sys.path.insert(0, os.path.abspath('../source'))
 __file__ = {'sys': sys, 'importlib': importlib}
 
 del importlib
