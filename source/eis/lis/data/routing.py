@@ -9,7 +9,8 @@ class LISRoutingData:
     def __init__( self, dset: xr.Dataset, **kwargs ):
         self.dset = self._add_latlon_coords( dset )
 
-    def from_smce(self, bucket: str, key: str ) -> "LISRoutingData":
+    @classmethod
+    def from_smce( cls, bucket: str, key: str ) -> "LISRoutingData":
         dset = eis3().get_zarr_dataset(bucket, key)
         return LISRoutingData( dset )
 
