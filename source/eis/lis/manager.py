@@ -2,7 +2,7 @@ import xarray as xr
 import numpy as np
 import pandas as pd
 import geopandas as gpd
-from eis.controller import eis
+from eis.smce import eis3
 
 class LIS:
 
@@ -32,5 +32,5 @@ class LIS:
 
     @classmethod
     def get_zarr_routing(cls, bucket: str, key: str)-> xr.Dataset:
-        dset = eis().get_zarr_dataset( bucket, key )
+        dset = eis3().get_zarr_dataset( bucket, key )
         return cls.add_latlon_coords(dset)
