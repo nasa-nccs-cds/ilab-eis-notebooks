@@ -26,10 +26,12 @@ class LISRoutingData:
     def site_graph(self, varName: str, lat: float, lon: float, **kwargs ):
         vardata: xr.DataArray = self.site_data( varName, lat, lon, ts=kwargs.pop('ts',None) )
         figsize = kwargs.pop( 'figsize', (8, 5) )
-        lplot: plt.Line2D = vardata.plot( figsize=figsize, **kwargs )
-        fig: plt.Figure = lplot.get_figure()
-        fig.patch.set_facecolor('yellow')
-        fig.set_facecolor('yellow')
+        lplot = vardata.plot( figsize=figsize, **kwargs )
+        print( lplot[0].__class__ )
+#        lplot: plt.Line2D
+#        fig: plt.Figure = lplot.get_figure()
+#        fig.patch.set_facecolor('yellow')
+#        fig.set_facecolor('yellow')
         return lplot
 
     @classmethod
