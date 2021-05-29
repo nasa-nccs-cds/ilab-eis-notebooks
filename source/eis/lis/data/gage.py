@@ -1,5 +1,6 @@
 import pandas as pd
 from typing import List, Union, Dict, Callable, Tuple, Optional, Any, Type, Mapping, Hashable
+import matplotlib.pyplot as plt
 import geopandas as gpd
 import geoviews as gv
 
@@ -41,4 +42,7 @@ class LISGageDataset:
         return pd.concat( self._gage_data, axis=1 )
 
     def plot_gage_data( self, **kwargs ):
-        self.gage_data.plot( figsize= kwargs.get( 'figsize', (12, 6) ) )
+        lplots = self.gage_data.plot( figsize= kwargs.get( 'figsize', (12, 6) ) )
+        fig: plt.Figure = lplots[0].get_figure()
+        fig.set_facecolor('yellow')
+        return lplots
