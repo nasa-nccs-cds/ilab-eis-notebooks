@@ -43,8 +43,6 @@ class LISGageDataset:
         return pd.concat( self._gage_data, axis=1 )
 
     def plot_gage_data( self, **kwargs ):
-        lplot: SubplotBase = self.gage_data.plot( figsize= kwargs.get( 'figsize', (12, 6) ) )
-        print( lplot.__class__ )
-#        fig: plt.Figure = lplot.
-#        fig.set_facecolor('yellow')
+        lplot = self.gage_data.plot( figsize= kwargs.get( 'figsize', (12, 6) ) )
+        lplot.figure.set_facecolor('yellow')
         return lplot
