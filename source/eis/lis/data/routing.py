@@ -26,13 +26,11 @@ class LISRoutingData:
     def site_graph(self, varName: str, lat: float, lon: float, **kwargs ):
         vardata: xr.DataArray = self.site_data( varName, lat, lon, ts=kwargs.pop('ts',None) )
         figsize = kwargs.pop( 'figsize', (8, 5) )
-        lplot = vardata.plot( figsize=figsize, **kwargs )
-        print( lplot[0].__class__ )
-#        lplot: plt.Line2D
-#        fig: plt.Figure = lplot.get_figure()
-#        fig.patch.set_facecolor('yellow')
-#        fig.set_facecolor('yellow')
-        return lplot
+        lplots = vardata.plot( figsize=figsize, **kwargs )
+        fig: plt.Figure = lplots[0].get_figure()
+        fig.patch.set_facecolor('yellow')
+        fig.set_facecolor('yellow')
+        return lplots
 
     @classmethod
     def _add_latlon_coords(cls, input_dset: xr.Dataset) -> xr.Dataset:
