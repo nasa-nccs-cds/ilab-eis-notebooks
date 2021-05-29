@@ -27,7 +27,9 @@ class LISRoutingData:
         vardata: xr.DataArray = self.site_data( varName, lat, lon, ts=kwargs.pop('ts',None) )
         figsize = kwargs.pop( 'figsize', (8, 5) )
         lplot: plt.Line2D = vardata.plot( figsize=figsize, **kwargs )
-        lplot.get_figure().patch.set_facecolor('yellow')
+        fig: plt.Figure = lplot.get_figure()
+        fig.patch.set_facecolor('yellow')
+        fig.set_facecolor('yellow')
         return lplot
 
     @classmethod
