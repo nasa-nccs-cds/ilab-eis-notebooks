@@ -28,7 +28,7 @@ class LISRoutingData:
         figsize = kwargs.pop( 'figsize', (8, 5) )
         lplots = vardata.plot( figsize=figsize, **kwargs )
         fig: plt.Figure = lplots[0].get_figure()
-        fig.patch.set_facecolor('yellow')
+#        fig.patch.set_facecolor('yellow')
         fig.set_facecolor('yellow')
         return lplots
 
