@@ -1,6 +1,7 @@
 import xarray as xr
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import pandas as pd
 import geopandas as gpd
 from eis.smce import eis3
@@ -25,9 +26,9 @@ class LISRoutingData:
     def site_graph(self, varName: str, lat: float, lon: float, **kwargs ):
         vardata: xr.DataArray = self.site_data( varName, lat, lon, ts=kwargs.pop('ts',None) )
         figsize = kwargs.pop( 'figsize', (8, 5) )
-        fig = plt.figure()
-        fig.patch.set_facecolor('yellow')
-        return vardata.plot( figsize=figsize, **kwargs )
+        lplot: plt.Line2D = vardata.plot( figsize=figsize, **kwargs )
+        lplot.get_figure().patch.set_facecolor('yellow')
+        return lplot
 
     @classmethod
     def _add_latlon_coords(cls, input_dset: xr.Dataset) -> xr.Dataset:
