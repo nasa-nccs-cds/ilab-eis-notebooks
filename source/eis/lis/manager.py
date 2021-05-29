@@ -4,10 +4,6 @@ import pandas as pd
 import geopandas as gpd
 from eis.controller import eis
 
-class LISGageData:
-
-
-
 class LIS:
 
     @classmethod

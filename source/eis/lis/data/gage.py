@@ -5,7 +5,7 @@ import geoviews as gv
 
 class LISGageDataset:
 
-    def __init__(self, header_file: str, **kwargs):
+    def __init__(self, header_file: str, gage_files: List[str]=[], **kwargs):
         idcol = kwargs.get( 'idcol', 0 )
         idtype = kwargs.get( 'idtype', str )
         geocols = kwargs.get( 'geom', dict( x=3, y=4 ) )
@@ -13,6 +13,7 @@ class LISGageDataset:
         usecols = [ idcol, geocols['x'], geocols['y'] ] + datacols
         self.header: pd.DataFrame = pd.read_csv( header_file, usecols=usecols, delim_whitespace=True, names=['id', 'lon', 'lat'], dtype={'id': idtype} )
         self._gage_data: List[pd.DataFrame] = []
+        self.add_gage_files( gage_files )
 
     @property
     def gage_map(self) -> gpd.GeoDataFrame:
@@ -30,8 +31,12 @@ class LISGageDataset:
         df = pd.read_csv( filepath, names=['date', gage_id], delim_whitespace=True,  parse_dates=['date'], index_col='date' )
         self._gage_data.append( df )
 
+    def add_gage_files(self, gage_file_paths: List[str] ):
+        for gage_file in gage_file_paths:
+            self.add_gage_file( gage_file )
+
     @property
-    def gage_data(self) -> gpd.DataFrame:
+    def gage_data(self) -> pd.DataFrame:
         return pd.concat( self._gage_data, axis=1 )
 
     def plot_gage_data( self, **kwargs ):
