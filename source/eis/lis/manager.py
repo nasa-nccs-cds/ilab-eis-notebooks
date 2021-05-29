@@ -1,9 +1,17 @@
 import xarray as xr
 import numpy as np
+import pandas as pd
+import geopandas as gpd
+from eis.controller import eis
+
+class LISGageData:
+
+
 
 class LIS:
 
-    def add_latlon_coords(input_dset: xr.Dataset) -> xr.Dataset:
+    @classmethod
+    def add_latlon_coords(cls, input_dset: xr.Dataset) -> xr.Dataset:
         """Adds lat/lon as dimensions and coordinates to an xarray.Dataset object."""
 
         dx = round( float( input_dset.attrs['DX'] ), 3)
@@ -25,3 +33,15 @@ class LIS:
         result.lon.attrs =  input_dset.lon.attrs
         result.lat.attrs =  input_dset.lat.attrs
         return result
+
+    @classmethod
+    def get_zarr_routing(cls, bucket: str, key: str)-> xr.Dataset:
+        dset = eis().get_zarr_dataset( bucket, key )
+        return cls.add_latlon_coords(dset)
+
+    def get_streamflow_header(self, filePath: str, **kwargs ) -> gpd.GeoDataFrame:
+        cols = dict( id= (0, 'gage_id', str), x= (3, 'lon', float), y= (4, 'lat', float) )
+        cols.update( kwargs )
+        df: pd.DataFrame = eis().read_csv_dataset( filePath, cols )
+        geometry = gpd.points_from_xy( getattr( df, cols['x'][1] ), getattr( df, cols['y'][1] ) )
+        return  gpd.GeoDataFrame( df, geometry=geometry )
