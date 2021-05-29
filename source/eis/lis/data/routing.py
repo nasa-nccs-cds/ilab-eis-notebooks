@@ -1,5 +1,6 @@
 import xarray as xr
 import numpy as np
+import matplotlib.pyplot as plt
 import pandas as pd
 import geopandas as gpd
 from eis.smce import eis3
@@ -22,8 +23,10 @@ class LISRoutingData:
         return vardata.sel( **sargs )
 
     def site_graph(self, varName: str, lat: float, lon: float, **kwargs ):
-        vardata = self.site_data( varName, lat, lon, ts=kwargs.pop('ts',None) )
+        vardata: xr.DataArray = self.site_data( varName, lat, lon, ts=kwargs.pop('ts',None) )
         figsize = kwargs.pop( 'figsize', (8, 5) )
+        fig = plt.figure()
+        fig.patch.set_facecolor('yellow')
         return vardata.plot( figsize=figsize, **kwargs )
 
     @classmethod
