@@ -21,12 +21,15 @@ class LISGageDataset:
     def gage_map(self) -> gpd.GeoDataFrame:
         return gpd.GeoDataFrame( self.header, geometry=gpd.points_from_xy( self.header.lon, self.header.lat ) )
 
-    def plot_gage_map(self):
+    def plot_map(self):
         kdims = ['lon', 'lat']
         pts_opts = gv.opts.Points(width=600, height=600, color='red', size=10, tools=['hover'])
         pts = gv.Points( self.header, kdims=kdims, vdims='id').opts( pts_opts )
         tiles = gv.tile_sources.EsriImagery()
         return tiles * pts
+
+    def hvplot_map(self):
+        return self.gage_map.hvplot( tiles='EsriTerrain', hover_cols='all' )
 
     def add_gage_file( self, filepath: str ):
         gage_id = filepath.split('/')[-1].strip('.txt')
@@ -42,7 +45,7 @@ class LISGageDataset:
     def gage_data(self) -> pd.DataFrame:
         return pd.concat( self._gage_data, axis=1 )
 
-    def plot_gage_data( self, **kwargs ):
+    def plot_data( self, **kwargs ):
         lplot = self.gage_data.plot( figsize= kwargs.get( 'figsize', (12, 6) ) )
         lplot.figure.set_facecolor('yellow')
         return lplot
