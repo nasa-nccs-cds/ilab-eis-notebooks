@@ -52,7 +52,7 @@ class LISRoutingData:
         return self.dset[vname].isel( id = index )
 
     def var_dmap( self, streams ) -> hv.DynamicMap:
-        def vmap( vname: str ): return self.dset[vname].isel(time=0)
+        def vmap( vname: str ): return self.dset[vname].isel(time=0).hvplot(title=vname)
         return hv.DynamicMap( vmap, streams=streams )
 
     def var_dmap2( self, streams ) -> hv.DynamicMap:
