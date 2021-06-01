@@ -14,7 +14,7 @@ class LISRoutingData:
 
     def __init__( self, dset: xr.Dataset, **kwargs ):
         self.dset: xr.Dataset = self._add_latlon_coords( dset )
-        self.loc = self.dset[['lon', 'lat']].isel(time=0).to_dataframe().reset_index()
+ #       self.loc = self.dset[['lon', 'lat']].isel(time=0).to_dataframe().reset_index()
 
     @classmethod
     def from_smce( cls, bucket: str, key: str ) -> "LISRoutingData":
