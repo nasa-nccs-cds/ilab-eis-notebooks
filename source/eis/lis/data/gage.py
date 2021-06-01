@@ -21,15 +21,18 @@ class LISGageDataset:
     def gage_map(self) -> gpd.GeoDataFrame:
         return gpd.GeoDataFrame( self.header, geometry=gpd.points_from_xy( self.header.lon, self.header.lat ) )
 
-    def plot_map(self):
-        kdims = ['lon', 'lat']
-        pts_opts = gv.opts.Points(width=600, height=600, color='red', size=10, tools=['hover'])
-        pts = gv.Points( self.header, kdims=kdims, vdims='id').opts( pts_opts )
-        tiles = gv.tile_sources.EsriImagery()
-        return tiles * pts
+    @property
+    def points( self, **kwargs ) -> gv.Points:
+        kdims = kwargs.pop( 'kdims', ['lon', 'lat'] )
+        return gv.Points( self.header, kdims=kdims, vdims='id', **kwargs )
 
-    def hvplot_map(self):
-        return self.gage_map.hvplot( tiles='EsriTerrain', hover_cols='all' )
+    def plot_map(self, **kwargs ):
+        color = kwargs.pop( 'color', 'red' )
+        size  = kwargs.pop( 'size', 10 )
+        tools = kwargs.pop( 'tools', ['hover'] )
+        pts_opts = gv.opts.Points( color=color, size=size, tools=tools, **kwargs )
+        tiles = gv.tile_sources.EsriImagery()
+        return tiles * self.points.opts( pts_opts )
 
     def add_gage_file( self, filepath: str ):
         gage_id = filepath.split('/')[-1].strip('.txt')

@@ -1,7 +1,11 @@
 import xarray as xr
 import numpy as np
 import matplotlib.pyplot as plt
+from functools import partial
+from scipy.spatial import distance
 import matplotlib as mpl
+from holoviews.streams import Stream, param
+import holoviews as hv
 import pandas as pd
 import geopandas as gpd
 from eis.smce import eis3
@@ -9,19 +13,39 @@ from eis.smce import eis3
 class LISRoutingData:
 
     def __init__( self, dset: xr.Dataset, **kwargs ):
-        self.dset = self._add_latlon_coords( dset )
+        self.dset: xr.Dataset = self._add_latlon_coords( dset )
+        self.loc = self.dset[['lon', 'lat']].isel(time=0).to_dataframe().reset_index()
 
     @classmethod
     def from_smce( cls, bucket: str, key: str ) -> "LISRoutingData":
         dset = eis3().get_zarr_dataset(bucket, key)
         return LISRoutingData( dset )
 
-    def site_data(self, varName: str, lat: float, lon: float, **kwargs ) -> xr.DataArray:
+    def nearest_grid(self, pt):
+        loc_valid = self.loc.dropna()
+        pts = loc_valid[ ['lon', 'lat'] ].to_numpy()
+        return distance.cdist([pt], pts).argmin()
+
+    def dynamic_map( self, **kwargs  ):
+        lat = param.Number( default=0.0, doc='Latitude' )
+        lon = param.Number( default=0.0, doc='Longitude' )
+        vname = param.String( default="", doc='Variable Name' )
+        return hv.DynamicMap( self.site_data, kdims=[ vname, lon, lat ], streams=kwargs.get( 'streams',[]) )
+
+    def idx_dynamic_map( self, **kwargs  ):
+        idx = param.Number( default=0.0, doc='Longitude' )
+        vname = param.String( default="", doc='Variable Name' )
+        return hv.DynamicMap( self.site_data, kdims=[ vname, lon, lat ], streams=kwargs.get( 'streams',[]) )
+
+    def site_data(self, vname: str, lon: float, lat: float, **kwargs ) -> xr.DataArray:
         ts = kwargs.get('ts',None)
-        vardata = self.dset[varName]
+        vardata = self.dset[vname]
         sargs = dict( lat=lat, lon=lon )
         if ts is not None: sargs['time'] = slice(*ts)
         return vardata.sel( **sargs )
+
+    def idx_site_data(self, vname: str, index: int ) -> xr.DataArray:
+        return self.dset[vname].isel( id = index )
 
     def site_graph(self, varName: str, lat: float, lon: float, **kwargs ):
         vardata: xr.DataArray = self.site_data( varName, lat, lon, ts=kwargs.pop('ts',None) )
