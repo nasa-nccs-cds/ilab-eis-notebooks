@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 from functools import partial
 from scipy.spatial import distance
 import matplotlib as mpl
-from holoviews.streams import Stream, param
+from holoviews.streams import Selection1D, Params, Stream, param
 import holoviews as hv
+import panel as pn
 import pandas as pd
 import geopandas as gpd
 from eis.smce import eis3
@@ -14,17 +15,20 @@ class LISRoutingData:
 
     def __init__( self, dset: xr.Dataset, **kwargs ):
         self.dset: xr.Dataset = self._add_latlon_coords( dset )
- #       self.loc = self.dset[['lon', 'lat']].isel(time=0).to_dataframe().reset_index()
+        self._vnames = None
+        defvar = kwargs.get('default_var','Streamflow_tavg')
+        self.default_variable = defvar if defvar in self.var_names else self.var_names[0]
 
     @classmethod
     def from_smce( cls, bucket: str, key: str ) -> "LISRoutingData":
         dset = eis3().get_zarr_dataset(bucket, key)
         return LISRoutingData( dset )
 
-    def nearest_grid(self, pt):
-        loc_valid = self.loc.dropna()
-        pts = loc_valid[ ['lon', 'lat'] ].to_numpy()
-        return distance.cdist([pt], pts).argmin()
+    @property
+    def var_names(self):
+        if self._vnames is None:
+            self._vnames = [ k for k,v in self.dset.variables.items() if v.ndim == 3 ]
+        return self._vnames
 
     def dynamic_map( self, **kwargs  ):
         lat = param.Number( default=0.0, doc='Latitude' )
@@ -46,6 +50,18 @@ class LISRoutingData:
 
     def idx_site_data(self, vname: str, index: int ) -> xr.DataArray:
         return self.dset[vname].isel( id = index )
+
+    def var_dmap( self, **kwargs ) -> hv.DynamicMap:
+        vname = param.String( default=self.default_variable, doc='Variable Name' )
+        tindex = param.Integer(default=0, doc='Time Index')
+        def vmap( vname: str, tindex: int ): return self.dset.dset[vname].isel(time=tindex)
+        return hv.DynamicMap( vmap, kdims=[ vname, tindex ], streams=kwargs.get( 'streams',[]) )
+
+    def plot(self):
+        var_select = pn.widgets.Select( options=self.var_names, value=self.default_variable, name="LIS Variable List" )
+        var_stream = Params( var_select, ['value'], rename={'value': 'vname'} )
+        varmap = self.var_dmap( streams=[var_stream] )
+        pn.Row( varmap, var_select )
 
     def site_graph(self, varName: str, lat: float, lon: float, **kwargs ):
         vardata: xr.DataArray = self.site_data( varName, lat, lon, ts=kwargs.pop('ts',None) )
