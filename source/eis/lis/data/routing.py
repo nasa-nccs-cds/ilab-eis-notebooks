@@ -64,7 +64,7 @@ class LISRoutingData:
         var_stream = Params( var_select, ['value'], rename={'value': 'vname'} )
  #       tindex = param.Integer(default=0, doc='Time Index')
         varmap = self.var_dmap( streams=[ var_stream ] )
-        pn.Row( varmap, var_select )
+        return pn.Row( varmap, var_select )
 
     def site_graph(self, varName: str, lat: float, lon: float, **kwargs ):
         vardata: xr.DataArray = self.site_data( varName, lat, lon, ts=kwargs.pop('ts',None) )
