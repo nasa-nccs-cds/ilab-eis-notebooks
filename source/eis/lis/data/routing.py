@@ -52,14 +52,18 @@ class LISRoutingData:
         return self.dset[vname].isel( id = index )
 
     def var_dmap( self, streams ) -> hv.DynamicMap:
+        def vmap( vname: str ): return self.dset.dset[vname].isel(time=0)
+        return hv.DynamicMap( vmap, streams=streams )
+
+    def var_dmap2( self, streams ) -> hv.DynamicMap:
         def vmap( vname: str, tindex: int ): return self.dset.dset[vname].isel(time=tindex)
         return hv.DynamicMap( vmap, streams=streams )
 
     def plot(self):
         var_select = pn.widgets.Select( options=self.var_names, value=self.default_variable, name="LIS Variable List" )
         var_stream = Params( var_select, ['value'], rename={'value': 'vname'} )
-        tindex = param.Integer(default=0, doc='Time Index')
-        varmap = self.var_dmap( streams=[ var_stream, tindex ] )
+ #       tindex = param.Integer(default=0, doc='Time Index')
+        varmap = self.var_dmap( streams=[ var_stream ] )
         pn.Row( varmap, var_select )
 
     def site_graph(self, varName: str, lat: float, lon: float, **kwargs ):
