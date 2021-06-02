@@ -49,11 +49,6 @@ class LISRoutingData:
         vname = param.String( default="", doc='Variable Name' )
         return hv.DynamicMap( self.site_data, kdims=[ vname, lon, lat ], streams=kwargs.get( 'streams',[]) )
 
-    def idx_dynamic_map( self, **kwargs  ):
-        idx = param.Number( default=0.0, doc='Longitude' )
-        vname = param.String( default="", doc='Variable Name' )
-        return hv.DynamicMap( self.site_data, kdims=[ vname, lon, lat ], streams=kwargs.get( 'streams',[]) )
-
     def site_data(self, vname: str, lon: float, lat: float, **kwargs ) -> xr.DataArray:
         ts = kwargs.get('ts',None)
         vardata = self.dset[vname]
@@ -69,7 +64,11 @@ class LISRoutingData:
         return hv.DynamicMap( vmap, streams=streams )
 
     def var_graph( self, streams ) -> hv.DynamicMap:
-        def vgraph( vname: str, lon: float, lat: float ): return self.dset[vname].sel(lon=lon,lat=lat).hvplot(title=vname)
+        def vgraph( vname: str, lon: float, lat: float ):
+            print( f"Plotting var_graph[{vname}]: lon={lon}, lat={lat}")
+            gdata = self.dset[vname].sel(lon=lon,lat=lat)
+            print(f"Result shape = {gdata.shape}")
+            return gdata.hvplot(title=vname)
         return hv.DynamicMap( vgraph, streams=streams )
 
     def plot(self):
