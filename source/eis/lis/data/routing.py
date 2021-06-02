@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from functools import partial
 from scipy.spatial import distance
-import matplotlib as mpl
+import matplotlib as mpl, traceback
 from holoviews.streams import Selection1D, Params, Stream, param, SingleTap
 from typing import List, Union, Dict, Callable, Tuple, Optional, Any, Type, Mapping, Hashable
 import holoviews as hv
@@ -66,10 +66,14 @@ class LISRoutingData:
     def var_graph( self, streams ) -> hv.DynamicMap:
         def vgraph( vname: str, lon: float, lat: float ):
             logger = eis3().get_logger()
-            logger.info( f"Plotting var_graph[{vname}]: lon={lon}, lat={lat}")
-            gdata = self.dset[vname].sel( lon=lon, lat=lat )
-            logger.info(f"Result shape = {gdata.shape}")
-            return gdata.hvplot(title=vname)
+            try:
+                logger.info( f"Plotting var_graph[{vname}]: lon={lon}, lat={lat}")
+                gdata = self.dset[vname].sel( lon=lon, lat=lat )
+                logger.info(f"Result shape = {gdata.shape}")
+                return gdata.hvplot(title=vname)
+            except Exception as err:
+                logger.info(f"Graph plot generated exception: {err}\n{traceback.format_exc()}")
+                raise err
         return hv.DynamicMap( vgraph, streams=streams )
 
     def plot(self):
