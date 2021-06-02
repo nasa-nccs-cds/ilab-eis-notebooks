@@ -66,7 +66,7 @@ class LISRoutingData:
         varmap = self.var_image( streams=[ var_stream ] )
         point_stream = SingleTap( x=0, y=0, source=varmap ).rename( x='lon', y="lat" )
         vargraph = self.var_graph(streams=[ var_stream, point_stream ] )
-        return pn.Row( varmap, pn.Column( [ var_select, vargraph ] ) )
+        return pn.Row( varmap, pn.Column(  var_select, vargraph ) )
 
     def site_graph(self, varName: str, lat: float, lon: float, **kwargs ):
         vardata: xr.DataArray = self.site_data( varName, lat, lon, ts=kwargs.pop('ts',None) )
