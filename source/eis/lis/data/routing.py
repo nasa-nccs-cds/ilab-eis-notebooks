@@ -27,9 +27,9 @@ class LISRoutingData:
         dset = eis3().get_zarr_dataset(bucket, key)
         return LISRoutingData( dset )
 
-    def nearest_grid( self, pt: Tuple[float,float] ) -> Tuple[int,int]:
+    def nearest_grid( self, pt: List[float] ) -> List[int]:
         idx = distance.cdist( np.array([pt]), self._pts ).argmin()
-        return  ( int(self._loc['east_west'].iloc[idx]), int(self._loc['north_south'].iloc[idx]) )
+        return  [ int(self._loc['east_west'].iloc[idx]), int(self._loc['north_south'].iloc[idx]) ]
 
     @property
     def var_names(self):
