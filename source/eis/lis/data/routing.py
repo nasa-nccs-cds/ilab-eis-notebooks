@@ -18,6 +18,10 @@ class LISRoutingData:
         self._vnames = None
         defvar = kwargs.get('default_var','Streamflow_tavg')
         self.default_variable = defvar if defvar in self.var_names else self.var_names[0]
+        self.lat = self.dset.lat
+        self.lon = self.dset.lon
+        self.x0 = self.lon[ self.lon.size / 2 ]
+        self.y0 = self.lat[ self.lat.size / 2 ]
 
     @classmethod
     def from_smce( cls, bucket: str, key: str ) -> "LISRoutingData":
@@ -64,7 +68,7 @@ class LISRoutingData:
         var_stream = Params( var_select, ['value'], rename={'value': 'vname'} )
  #       tindex = param.Integer(default=0, doc='Time Index')
         varmap = self.var_image( streams=[ var_stream ] )
-        point_stream = SingleTap( source=varmap ).rename( x='lon', y="lat" )
+        point_stream = SingleTap( x=self.x0, y=self.y0, source=varmap ).rename( x='lon', y="lat" )
         vargraph = self.var_graph(streams=[ var_stream, point_stream ] )
         return pn.Row( varmap, pn.Column(  var_select, vargraph ) )
 
