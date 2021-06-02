@@ -5,6 +5,7 @@ from functools import partial
 from scipy.spatial import distance
 import matplotlib as mpl
 from holoviews.streams import Selection1D, Params, Stream, param, SingleTap
+from typing import List, Union, Dict, Callable, Tuple, Optional, Any, Type, Mapping, Hashable
 import holoviews as hv
 import panel as pn
 import pandas as pd
@@ -18,15 +19,17 @@ class LISRoutingData:
         self._vnames = None
         defvar = kwargs.get('default_var','Streamflow_tavg')
         self.default_variable = defvar if defvar in self.var_names else self.var_names[0]
-        self.lat = self.dset.lat
-        self.lon = self.dset.lon
-        self.x0 = self.lon[ self.lon.size / 2 ]
-        self.y0 = self.lat[ self.lat.size / 2 ]
+        self._loc = dset[['lon','lat']].isel(time=0).to_dataframe().reset_index().dropna()
+        self._pts: np.ndarray = self._loc[['lon', 'lat']].to_numpy()
 
     @classmethod
     def from_smce( cls, bucket: str, key: str ) -> "LISRoutingData":
         dset = eis3().get_zarr_dataset(bucket, key)
         return LISRoutingData( dset )
+
+    def nearest_grid( self, pt: Tuple[float,float] ) -> Tuple[int,int]:
+        idx = distance.cdist( np.array([pt]), self._pts ).argmin()
+        return  ( int(self._loc['east_west'].iloc[idx]), int(self._loc['north_south'].iloc[idx]) )
 
     @property
     def var_names(self):
