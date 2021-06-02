@@ -19,17 +19,23 @@ class LISRoutingData:
         self._vnames = None
         defvar = kwargs.get('default_var','Streamflow_tavg')
         self.default_variable = defvar if defvar in self.var_names else self.var_names[0]
-        self._loc = dset[['lon','lat']].isel(time=0).to_dataframe().reset_index().dropna()
-        self._pts: np.ndarray = self._loc[['lon', 'lat']].to_numpy()
+        self.nx = self.dset.lon.size
+        self.ny = self.dset.lat.size
+        self.lat = self.dset.lat
+        self.lon = self.dset.lon
+        self.y0 = self.lat[ self.ny // 2 ]
+        self.x0 = self.lon[ self.nx // 2 ]
+    #    self._loc = dset[['lon','lat']].isel(time=0).to_dataframe().reset_index().dropna()
+     #   self._pts: np.ndarray = self._loc[['lon', 'lat']].to_numpy()
 
     @classmethod
     def from_smce( cls, bucket: str, key: str ) -> "LISRoutingData":
         dset = eis3().get_zarr_dataset(bucket, key)
         return LISRoutingData( dset )
 
-    def nearest_grid( self, pt: List[float] ) -> List[int]:
-        idx = distance.cdist( np.array([pt]), self._pts ).argmin()
-        return  [ int(self._loc['east_west'].iloc[idx]), int(self._loc['north_south'].iloc[idx]) ]
+    # def nearest_grid( self, lon, lat ) -> List[int]:
+    #     idx = distance.cdist( np.array([lon,lat]), self._pts ).argmin()
+    #     return  [ int(self._loc['east_west'].iloc[idx]), int(self._loc['north_south'].iloc[idx]) ]
 
     @property
     def var_names(self):
