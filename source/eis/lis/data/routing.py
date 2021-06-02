@@ -1,6 +1,7 @@
 import xarray as xr
 import numpy as np
 import matplotlib.pyplot as plt
+from eis.smce import eis3, exception_handled
 from functools import partial
 from scipy.spatial import distance
 import matplotlib as mpl, traceback
@@ -56,13 +57,12 @@ class LISRoutingData:
         if ts is not None: sargs['time'] = slice(*ts)
         return vardata.sel( **sargs )
 
-    def idx_site_data(self, vname: str, index: int ) -> xr.DataArray:
-        return self.dset[vname].isel( id = index )
-
+    @exception_handled
     def var_image( self, streams ) -> hv.DynamicMap:
         def vmap( vname: str ): return self.dset[vname].isel(time=0).hvplot(title=vname)
         return hv.DynamicMap( vmap, streams=streams )
 
+    @exception_handled
     def var_graph( self, streams ) -> hv.DynamicMap:
         def vgraph( vname: str, lon: float, lat: float ):
             logger = eis3().get_logger()
@@ -76,6 +76,7 @@ class LISRoutingData:
                 raise err
         return hv.DynamicMap( vgraph, streams=streams )
 
+    @exception_handled
     def plot(self):
         var_select = pn.widgets.Select( options=self.var_names, value=self.default_variable, name="LIS Variable List" )
         var_stream = Params( var_select, ['value'], rename={'value': 'vname'} )
@@ -85,6 +86,7 @@ class LISRoutingData:
         vargraph = self.var_graph( streams=[ var_stream, point_stream ] )
         return pn.Row( varmap, pn.Column(  var_select, vargraph ) )
 
+    @exception_handled
     def site_graph(self, varName: str, lat: float, lon: float, **kwargs ):
         vardata: xr.DataArray = self.site_data( varName, lat, lon, ts=kwargs.pop('ts',None) )
         figsize = kwargs.pop( 'figsize', (8, 5) )

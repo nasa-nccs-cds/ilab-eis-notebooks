@@ -1,4 +1,4 @@
-import s3fs, logging, os, socket
+import s3fs, logging, os, socket, traceback
 from glob import glob
 import numpy as np
 from typing import List, Union, Dict, Callable, Tuple, Optional, Any, Type, Mapping, Hashable
@@ -49,6 +49,15 @@ class EIS3(EISSingleton):
             _logger.addHandler(ch)
         return _logger
 
+    def exception(self, msg: str ):
+        self.get_logger().error( f"\n{msg}\n{traceback.format_exc()}\n" )
+
+
 def eis3( *args, **kwargs ):
     return EIS3.instance( *args, **kwargs )
 
+def exception_handled(func):
+    def wrapper( *args, **kwargs ):
+        try:        return func( *args, **kwargs )
+        except:     eis3().exception( f" Error in {func}:")
+    return wrapper
