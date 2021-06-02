@@ -65,9 +65,10 @@ class LISRoutingData:
 
     def var_graph( self, streams ) -> hv.DynamicMap:
         def vgraph( vname: str, lon: float, lat: float ):
-            print( f"Plotting var_graph[{vname}]: lon={lon}, lat={lat}")
-            gdata = self.dset[vname].sel(lon=lon,lat=lat)
-            print(f"Result shape = {gdata.shape}")
+            logger = eis3().get_logger()
+            logger.info( f"Plotting var_graph[{vname}]: lon={lon}, lat={lat}")
+            gdata = self.dset[vname].sel( lon=lon, lat=lat )
+            logger.info(f"Result shape = {gdata.shape}")
             return gdata.hvplot(title=vname)
         return hv.DynamicMap( vgraph, streams=streams )
 
@@ -77,7 +78,7 @@ class LISRoutingData:
  #       tindex = param.Integer(default=0, doc='Time Index')
         varmap = self.var_image( streams=[ var_stream ] )
         point_stream = SingleTap( x=self.x0, y=self.y0, source=varmap ).rename( x='lon', y="lat" )
-        vargraph = self.var_graph(streams=[ var_stream, point_stream ] )
+        vargraph = self.var_graph( streams=[ var_stream, point_stream ] )
         return pn.Row( varmap, pn.Column(  var_select, vargraph ) )
 
     def site_graph(self, varName: str, lat: float, lon: float, **kwargs ):
