@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from functools import partial
 from scipy.spatial import distance
 import matplotlib as mpl
-from holoviews.streams import Selection1D, Params, Stream, param
+from holoviews.streams import Selection1D, Params, Stream, param, SingleTap
 import holoviews as hv
 import panel as pn
 import pandas as pd
@@ -51,20 +51,22 @@ class LISRoutingData:
     def idx_site_data(self, vname: str, index: int ) -> xr.DataArray:
         return self.dset[vname].isel( id = index )
 
-    def var_dmap( self, streams ) -> hv.DynamicMap:
+    def var_image( self, streams ) -> hv.DynamicMap:
         def vmap( vname: str ): return self.dset[vname].isel(time=0).hvplot(title=vname)
         return hv.DynamicMap( vmap, streams=streams )
 
-    def var_dmap2( self, streams ) -> hv.DynamicMap:
-        def vmap( vname: str, tindex: int ): return self.dset[vname].isel(time=tindex)
-        return hv.DynamicMap( vmap, streams=streams )
+    def var_graph( self, streams ) -> hv.DynamicMap:
+        def vgraph( vname: str, lon: float, lat: float ): return self.dset[vname].sel(lon=lon,lat=lat).hvplot(title=vname)
+        return hv.DynamicMap( vgraph, streams=streams )
 
     def plot(self):
         var_select = pn.widgets.Select( options=self.var_names, value=self.default_variable, name="LIS Variable List" )
         var_stream = Params( var_select, ['value'], rename={'value': 'vname'} )
  #       tindex = param.Integer(default=0, doc='Time Index')
-        varmap = self.var_dmap( streams=[ var_stream ] )
-        return pn.Row( varmap, var_select )
+        varmap = self.var_image( streams=[ var_stream ] )
+        point_stream = SingleTap( x=0, y=0, source=varmap ).rename( x='lon', y="lat" )
+        vargraph = self.var_graph(streams=[ var_stream, point_stream ] )
+        return pn.Row( varmap, pn.Column( [ var_select, vargraph ] ) )
 
     def site_graph(self, varName: str, lat: float, lon: float, **kwargs ):
         vardata: xr.DataArray = self.site_data( varName, lat, lon, ts=kwargs.pop('ts',None) )
