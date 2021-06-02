@@ -18,13 +18,13 @@ class LISRoutingData:
         self.dset: xr.Dataset = self._add_latlon_coords( dset )
         self._vnames = None
         defvar = kwargs.get('default_var','Streamflow_tavg')
-        self.default_variable = defvar if defvar in self.var_names else self.var_names[0]
-        self.nx = self.dset.lon.size
-        self.ny = self.dset.lat.size
-        self.lat = self.dset.lat
-        self.lon = self.dset.lon
-        self.y0 = self.lat[ self.ny // 2 ]
-        self.x0 = self.lon[ self.nx // 2 ]
+        self.default_variable: str = defvar if defvar in self.var_names else self.var_names[0]
+        self.nx: int = self.dset.lon.size
+        self.ny: int = self.dset.lat.size
+        self.lat: np.ndarray = self.dset.lat.values
+        self.lon: np.ndarray = self.dset.lon.values
+        self.y0: float = self.lat[ self.ny // 2 ]
+        self.x0: float  = self.lon[ self.nx // 2 ]
     #    self._loc = dset[['lon','lat']].isel(time=0).to_dataframe().reset_index().dropna()
      #   self._pts: np.ndarray = self._loc[['lon', 'lat']].to_numpy()
 
