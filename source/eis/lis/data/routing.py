@@ -68,11 +68,11 @@ class LISRoutingData:
             logger = eis3().get_logger()
             try:
                 logger.info( f"Plotting var_graph[{vname}]: lon={lon}, lat={lat}")
-                gdata = self.dset[vname].sel( lon=lon, lat=lat )
+                gdata = self.dset[vname].sel( lon=lon, lat=lat, method="nearest" )
                 logger.info(f"Result shape = {gdata.shape}")
                 return gdata.hvplot(title=vname)
             except Exception as err:
-                logger.info(f"Graph plot generated exception: {err}\n{traceback.format_exc()}")
+                logger.error(f"Graph plot generated exception: {err}\n{traceback.format_exc()}")
                 raise err
         return hv.DynamicMap( vgraph, streams=streams )
 
