@@ -1,5 +1,5 @@
 import xarray as xr
-import numpy as np
+import time, numpy as np
 import matplotlib.pyplot as plt
 from eis.smce import eis3, exception_handled
 from functools import partial
@@ -59,22 +59,31 @@ class LISRoutingData:
 
     @exception_handled
     def var_image( self, streams ) -> hv.DynamicMap:
-        def vmap( vname: str ): return self.dset[vname].isel(time=0).hvplot(title=vname)
+        def vmap( vname: str ):
+            logger = eis3().get_logger()
+            try:
+                t0 = time.time()
+                logger.info(f"Plotting map image[{vname}]")
+                image_data: xr.DataArray = self.dset[vname].isel(time=0)
+                image_plot =  image_data.hvplot( title=vname )
+                logger.info(f"Result shape = {image_data.shape}, exec time = {time.time() - t0} sec")
+                return image_plot
+            except Exception as err:
+                logger.error(f"Map plot generated exception: {err}\n{traceback.format_exc()}")
+                raise err
         return hv.DynamicMap( vmap, streams=streams )
-
-    def list_loggers(self):
-        logger = eis3().get_logger()
-        logger.info( f" Loggers = {list(logging.root.manager.loggerDict.keys())}" )
 
     @exception_handled
     def var_graph( self, streams ) -> hv.DynamicMap:
         def vgraph( vname: str, x: float, y: float ):
             logger = eis3().get_logger()
             try:
+                t0 = time.time()
                 logger.info( f"Plotting var_graph[{vname}]: lon={x}, lat={y}")
                 gdata = self.dset[vname].sel( lon=x, lat=y, method="nearest" )
-                logger.info(f"Result shape = {gdata.shape}")
-                return gdata.hvplot(title=vname)
+                graph_plot = gdata.hvplot(title=vname)
+                logger.info(f"Result shape = {gdata.shape}, exec time = {time.time()-t0} sec")
+                return graph_plot
             except Exception as err:
                 logger.error(f"Graph plot generated exception: {err}\n{traceback.format_exc()}")
                 raise err
@@ -97,7 +106,6 @@ class LISRoutingData:
         varmap = self.var_image(streams=[var_stream])
         point_stream = Tap( x=self.x0, y=self.y0, source=varmap )
         vargraph = self.var_graph( [var_stream, point_stream] )
-        self.list_loggers()
         return pn.Row( varmap, pn.Column( var_select, vargraph ) )
 
     @exception_handled
