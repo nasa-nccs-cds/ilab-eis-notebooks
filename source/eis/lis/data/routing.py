@@ -95,7 +95,7 @@ class LISRoutingData:
         var_select = pn.widgets.Select(options=self.var_names, value=self.default_variable, name="LIS Variable List")
         var_stream = Params( var_select, ['value'], rename={ 'value': 'vname' } )
         varmap = self.var_image(streams=[var_stream])
-        point_stream = Tap( x=self.x0, y=self.y0, source=varmap, transient=True ).rename( x='lon', y="lat" )
+        point_stream = Tap( x=self.x0, y=self.y0, source=varmap )
         vargraph = self.var_graph( [var_stream, point_stream] )
         self.list_loggers()
         return pn.Row( varmap, pn.Column( var_select, vargraph ) )
