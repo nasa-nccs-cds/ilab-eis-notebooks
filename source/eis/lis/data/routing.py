@@ -76,8 +76,10 @@ class LISRoutingData:
                 ics = self.get_indices(x, y)
                 logger.info( f"Plotting var_graph[{vname}]: lon={x} ({ics['lon']}), lat={y} ({ics['lat']})")
                 gdata = self.dset[vname].isel( lon= ics['lon'], lat= ics['lat'] )
+                gdata.compute()
+                t1 = time.time()
                 graph_plot = gdata.hvplot(title=vname)
-                logger.info(f"Result shape = {gdata.shape}, exec time = {time.time()-t0} sec")
+                logger.info( f"Result shape = {gdata.shape}, exec times> read: {t1-t0}, plot: {time.time()-t1} sec" )
                 return graph_plot
             except Exception as err:
                 logger.error(f"Graph plot generated exception: {err}\n{traceback.format_exc()}")
