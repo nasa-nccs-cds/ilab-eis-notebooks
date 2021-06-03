@@ -20,14 +20,8 @@ class LISRoutingData:
         self._vnames = None
         defvar = kwargs.get('default_var','Streamflow_tavg')
         self.default_variable: str = defvar if defvar in self.var_names else self.var_names[0]
-        self.nx: int = self.dset.lon.size
-        self.ny: int = self.dset.lat.size
-        self.lat: np.ndarray = self.dset.lat.values
-        self.lon: np.ndarray = self.dset.lon.values
-        self.y0: float = self.lat[ self.ny // 2 ]
-        self.x0: float  = self.lon[ self.nx // 2 ]
     #    self._loc = dset[['lon','lat']].isel(time=0).to_dataframe().reset_index().dropna()
-     #   self._pts: np.ndarray = self._loc[['lon', 'lat']].to_numpy()
+    #   self._pts: np.ndarray = self._loc[['lon', 'lat']].to_numpy()
 
     @classmethod
     def from_smce( cls, bucket: str, key: str ) -> "LISRoutingData":
@@ -79,8 +73,9 @@ class LISRoutingData:
             logger = eis3().get_logger()
             try:
                 t0 = time.time()
-                logger.info( f"Plotting var_graph[{vname}]: lon={x}, lat={y}")
-                gdata = self.dset[vname].sel( lon=x, lat=y, method="nearest" )
+                ics = self.get_indices(x, y)
+                logger.info( f"Plotting var_graph[{vname}]: lon={x} ({ics['lon']}), lat={y} ({ics['lat']})")
+                gdata = self.dset[vname].isel( lon= ics['lon'], lat= ics['lat'] )
                 graph_plot = gdata.hvplot(title=vname)
                 logger.info(f"Result shape = {gdata.shape}, exec time = {time.time()-t0} sec")
                 return graph_plot
@@ -90,21 +85,11 @@ class LISRoutingData:
         return hv.DynamicMap( vgraph, streams=streams )
 
     @exception_handled
-    def plot1(self):
-        var_select = pn.widgets.Select( options=self.var_names, value=self.default_variable, name="LIS Variable List" )
-        var_stream = Params( var_select, ['value'], rename={'value': 'vname'} )
- #       tindex = param.Integer(default=0, doc='Time Index')
-        varmap = self.var_image( streams=[ var_stream ] )
-        point_stream = Tap( x=self.x0, y=self.y0, source=varmap, transient=True )
-        vargraph = self.var_graph( streams=[ var_stream, point_stream ] )
-        return pn.Row( varmap, pn.Column(  var_select, vargraph ) )
-
-    @exception_handled
     def plot(self):
         var_select = pn.widgets.Select(options=self.var_names, value=self.default_variable, name="LIS Variable List")
         var_stream = Params( var_select, ['value'], rename={ 'value': 'vname' } )
         varmap = self.var_image(streams=[var_stream])
-        point_stream = Tap( x=self.x0, y=self.y0, source=varmap )
+        point_stream = Tap( x=self._xc, y=self._yc, source=varmap )
         vargraph = self.var_graph( [var_stream, point_stream] )
         return pn.Row( varmap, pn.Column( var_select, vargraph ) )
 
@@ -117,25 +102,29 @@ class LISRoutingData:
         fig.set_facecolor('yellow')
         return lplots
 
-    @classmethod
-    def _add_latlon_coords(cls, input_dset: xr.Dataset) -> xr.Dataset:
+    def get_indices( self, lon: float, lat: float ) -> Dict[str,int]:
+        ix = int( ( lon - self._x0 ) // self._dx )
+        iy = int( ( lat - self._y0 ) // self._dy )
+        return dict( lon=ix, lat=iy )
+
+    def _add_latlon_coords(self, input_dset: xr.Dataset) -> xr.Dataset:
         """Adds lat/lon as dimensions and coordinates to an xarray.Dataset object."""
 
-        dx = round( float( input_dset.attrs['DX'] ), 3)
-        dy = round( float( input_dset.attrs['DY'] ), 3)
-        ew_len = len( input_dset['east_west'] )
-        ns_len = len( input_dset['north_south'] )
-        ll_lat = round( float( input_dset.attrs['SOUTH_WEST_CORNER_LAT'] ), 3)
-        ll_lon = round( float( input_dset.attrs['SOUTH_WEST_CORNER_LON'] ), 3)
-        ur_lat = ll_lat + (dy * ns_len)
-        ur_lon = ll_lon + (dx * ew_len)
-
-        coords = dict(
-            lat= np.linspace(ll_lat, ur_lat, ns_len, dtype=np.float32, endpoint=False),
-            lon= np.linspace(ll_lon, ur_lon, ew_len, dtype=np.float32, endpoint=False)
-        )
-
+        self._dx = round( float( input_dset.attrs['DX'] ), 3)
+        self._dy = round( float( input_dset.attrs['DY'] ), 3)
+        self._nx = len( input_dset['east_west'] )
+        self._ny = len( input_dset['north_south'] )
+        self._y0 = round( float( input_dset.attrs['SOUTH_WEST_CORNER_LAT'] ), 3)
+        self._x0 = round( float( input_dset.attrs['SOUTH_WEST_CORNER_LON'] ), 3)
+        self._y1 = self._y0 + (self._dy * self._ny )
+        self._x1 = self._x0 + (self._dx * self._nx )
+        self._lat = np.linspace( self._y0, self._y1, self._ny, dtype=np.float32, endpoint=False )
+        self._lon = np.linspace( self._x0, self._x1, self._nx, dtype=np.float32, endpoint=False )
+        self._xc = self._lon[ self._nx // 2 ]
+        self._yc = self._lat[ self._ny // 2 ]
+        coords = dict( lat=self._lat, lon=self._lon )
         cmap = dict( north_south= 'lat', east_west= 'lon' )
+
         result = input_dset.drop_vars( cmap.values() ).rename( cmap ).assign_coords( coords )
         result.lon.attrs =  input_dset.lon.attrs
         result.lat.attrs =  input_dset.lat.attrs
