@@ -5,7 +5,7 @@ from eis.smce import eis3, exception_handled
 from functools import partial
 from scipy.spatial import distance
 import matplotlib as mpl, traceback
-from holoviews.streams import Selection1D, Params, Stream, param, SingleTap
+from holoviews.streams import Selection1D, Params, Stream, param, Tap
 from typing import List, Union, Dict, Callable, Tuple, Optional, Any, Type, Mapping, Hashable
 import holoviews as hv
 import panel as pn
@@ -86,19 +86,19 @@ class LISRoutingData:
         var_stream = Params( var_select, ['value'], rename={'value': 'vname'} )
  #       tindex = param.Integer(default=0, doc='Time Index')
         varmap = self.var_image( streams=[ var_stream ] )
-        point_stream = SingleTap( x=self.x0, y=self.y0, source=varmap, transient=True ).rename( x='lon', y="lat" )
+        point_stream = Tap( x=self.x0, y=self.y0, source=varmap, transient=True ).rename( x='lon', y="lat" )
         vargraph = self.var_graph( streams=[ var_stream, point_stream ] )
         return pn.Row( varmap, pn.Column(  var_select, vargraph ) )
 
     @exception_handled
     def plot(self):
         var_select = pn.widgets.Select(options=self.var_names, value=self.default_variable, name="LIS Variable List")
-        var_stream = Params(var_select, ['value'], rename={'value': 'vname'})
+        var_stream = Params( var_select, ['value'], rename={'value': 'vname'} )
         varmap = self.var_image(streams=[var_stream])
-        point_stream = SingleTap( x=self.x0, y=self.y0 ).rename( x='lon', y="lat")
+        point_stream = Tap( x=self.x0, y=self.y0 ).rename( x='lon', y="lat" )
         vargraph = self.var_graph( [var_stream, point_stream] )
         self.list_loggers()
-        return pn.Row(varmap, pn.Column( var_select, vargraph ) )
+        return pn.Row( varmap, pn.Column( var_select, vargraph ) )
 
     @exception_handled
     def site_graph(self, varName: str, lat: float, lon: float, **kwargs ):
