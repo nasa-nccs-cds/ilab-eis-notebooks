@@ -68,11 +68,11 @@ class LISRoutingData:
 
     @exception_handled
     def var_graph( self, streams ) -> hv.DynamicMap:
-        def vgraph( vname: str, lon: float, lat: float ):
+        def vgraph( vname: str, x: float, y: float ):
             logger = eis3().get_logger()
             try:
-                logger.info( f"Plotting var_graph[{vname}]: lon={lon}, lat={lat}")
-                gdata = self.dset[vname].sel( lon=lon, lat=lat, method="nearest" )
+                logger.info( f"Plotting var_graph[{vname}]: lon={x}, lat={y}")
+                gdata = self.dset[vname].sel( lon=x, lat=y, method="nearest" )
                 logger.info(f"Result shape = {gdata.shape}")
                 return gdata.hvplot(title=vname)
             except Exception as err:
@@ -86,14 +86,14 @@ class LISRoutingData:
         var_stream = Params( var_select, ['value'], rename={'value': 'vname'} )
  #       tindex = param.Integer(default=0, doc='Time Index')
         varmap = self.var_image( streams=[ var_stream ] )
-        point_stream = Tap( x=self.x0, y=self.y0, source=varmap, transient=True ).rename( x='lon', y="lat" )
+        point_stream = Tap( x=self.x0, y=self.y0, source=varmap, transient=True )
         vargraph = self.var_graph( streams=[ var_stream, point_stream ] )
         return pn.Row( varmap, pn.Column(  var_select, vargraph ) )
 
     @exception_handled
     def plot(self):
         var_select = pn.widgets.Select(options=self.var_names, value=self.default_variable, name="LIS Variable List")
-        var_stream = Params( var_select, ['value'], rename={'value': 'vname'} )
+        var_stream = Params( var_select, ['value'], rename={ 'value': 'vname' } )
         varmap = self.var_image(streams=[var_stream])
         point_stream = Tap( x=self.x0, y=self.y0, source=varmap, transient=True ).rename( x='lon', y="lat" )
         vargraph = self.var_graph( [var_stream, point_stream] )

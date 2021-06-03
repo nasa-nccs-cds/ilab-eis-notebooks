@@ -33,9 +33,11 @@ class EIS3(EISSingleton):
 
     def get_logger(self):
         _logger = logging.getLogger(f'eis.smce.{self.hostname()}.{self.pid()}')
+        _root_logger = logging.getLogger()
         if len( _logger.handlers ) == 0:
             _logger.setLevel(logging.DEBUG)
             log_file = f'{self.cache_dir}/logging/eis.smce.{self.hostname()}.{self.pid()}.log'
+            root_log_file = f'{self.cache_dir}/logging/root.{self.hostname()}.{self.pid()}.log'
             print( f" ***   Opening Log file: {log_file}  *** ")
             os.makedirs( os.path.dirname(log_file), exist_ok=True )
             fh = logging.FileHandler( log_file )
@@ -47,6 +49,10 @@ class EIS3(EISSingleton):
             ch.setFormatter(formatter)
             _logger.addHandler(fh)
             _logger.addHandler(ch)
+            rfh = logging.FileHandler(root_log_file)
+            rfh.setLevel(logging.INFO)
+            rfh.setFormatter(formatter)
+            _root_logger.addHandler(rfh)
         return _logger
 
     def exception(self, msg: str ):
