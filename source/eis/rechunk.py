@@ -13,7 +13,7 @@ class Rechunker:
         self.name = name
         self.dset: xr.Dataset = dset
         self.cache_dir = kwargs.pop( 'cache_dir', eis3().cache_dir )
-        self.data_dir = kwargs.get( 'data_dir', self.cache_dir )
+        self.data_dir  = kwargs.get( 'data_dir',  eis3().data_dir  )
 
     def result_path(self):
         return f"{self.data_dir}/{self.name}.zarr"

@@ -12,8 +12,15 @@ class EIS3(EISSingleton):
         EISSingleton.__init__( self, **kwargs )
         anon = kwargs.pop( 'anon', False )
         self.s3 = s3fs.S3FileSystem( anon=anon, **kwargs )
-        self.cache_dir = os.path.expanduser( "~/.eis_smce")
-        os.makedirs( self.cache_dir, exist_ok=True )
+        self.eis_dir = os.path.expanduser( "~/.eis_smce" )
+        self.cache_dir = self.eis_subdir(  "cache" )
+        self.log_dir =   self.eis_subdir(  "logging" )
+        self.data_dir =  self.eis_subdir(   "data" )
+
+    def eis_subdir(self, name: str ):
+        subdir = os.path.join( self.eis_dir, name )
+        os.makedirs( subdir, exist_ok=True)
+        return subdir
 
     def get_zarr_dataset(self, bucket: str, key: str, **kwargs ) -> xr.Dataset:
         consolidated = kwargs.pop( 'consolidated', True )
@@ -36,8 +43,8 @@ class EIS3(EISSingleton):
         _root_logger = logging.getLogger()
         if len( _logger.handlers ) == 0:
             _logger.setLevel(logging.DEBUG)
-            log_file = f'{self.cache_dir}/logging/eis.smce.{self.hostname()}.{self.pid()}.log'
-            root_log_file = f'{self.cache_dir}/logging/root.{self.hostname()}.{self.pid()}.log'
+            log_file = f'{self.log_dir}/eis.smce.{self.hostname()}.{self.pid()}.log'
+            root_log_file = f'{self.log_dir}/root.{self.hostname()}.{self.pid()}.log'
             print( f" ***   Opening Log file: {log_file}  *** ")
             os.makedirs( os.path.dirname(log_file), exist_ok=True )
             fh = logging.FileHandler( log_file )
