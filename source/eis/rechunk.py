@@ -40,4 +40,5 @@ class Rechunker:
             print( f"Writing result to {target_store.path} with max-memory-per-worker set to {max_memory}" )
         if isinstance( temp_store, str):
             temp_store = DirectoryStore( f"{temp_store}/{self.name}.zarr"  )
-        return rechunk( self.dset, chunks, max_memory,  target_store=target_store, temp_store=temp_store, executor="dask", **kwargs )
+        var_chunks = { v:chunks for v in self.dset.data_vars }
+        return rechunk( self.dset, var_chunks, max_memory,  target_store=target_store, temp_store=temp_store, executor="dask", **kwargs )
