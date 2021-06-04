@@ -42,9 +42,9 @@ class Rechunker:
 
     def rechunk( self, chunk_sizes: Dict[str,int], **kwargs ):
         t0 = time.time()
-        max_memory =   kwargs.get( 'max_memory', "500MB" )
-        target_store = kwargs.get( 'target_store', self.data_dir )
-        temp_store =   kwargs.get( 'temp_store', self.cache_dir )
+        max_memory =   kwargs.pop( 'max_memory', "500MB" )
+        target_store = kwargs.pop( 'target_store', self.data_dir )
+        temp_store =   kwargs.pop( 'temp_store', self.cache_dir )
         chunks = self.get_chunks( chunk_sizes )
         if isinstance( target_store, str ):
             target_store = f"{target_store}/{self.name}.zarr"
