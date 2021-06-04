@@ -35,10 +35,11 @@ class Rechunker:
         max_memory =   kwargs.get( 'max_memory', "250MB" )
         target_store = kwargs.get( 'target_store', self.data_dir )
         temp_store =   kwargs.get( 'temp_store', self.cache_dir )
+        var_chunks = {v: chunks for v in self.dset.data_vars}
         if isinstance( target_store, str ):
-            target_store = DirectoryStore( f"{target_store}/{self.name}.zarr" )
-            print( f"Writing result to {target_store.path} with max-memory-per-worker set to {max_memory}" )
+            target_store = f"{target_store}/{self.name}.zarr"
+            print( f"Writing result to {target_store} with max-memory-per-worker set to {max_memory}" )
         if isinstance( temp_store, str):
-            temp_store = DirectoryStore( f"{temp_store}/{self.name}.zarr"  )
-        var_chunks = { v:chunks for v in self.dset.data_vars }
-        return rechunk( self.dset, var_chunks, max_memory,  target_store=target_store, temp_store=temp_store, executor="dask", **kwargs )
+            temp_store =  f"{temp_store}/{self.name}.zarr"
+            print(f"Using temp_store: {temp_store} with chunks = {var_chunks}")
+        return rechunk( self.dset, var_chunks, max_memory,  target_store=target_store, temp_store=temp_store, **kwargs )
