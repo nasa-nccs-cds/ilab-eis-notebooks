@@ -32,11 +32,17 @@ class Rechunker:
         dset = xr.open_zarr( zarr_dset_path, consolidated=True )
         return Rechunker( name, dset, data_dir=data_dir, **kwargs  )
 
-    def rechunk( self, chunks: Dict, **kwargs ):
+    def get_chunks(self, chunk_sizes: Dict[str,int] ):
+        chunks = {}
+        for (vname,v) in self.dset.data_vars.items():
+            chunks[vname] = { d: chunk_sizes[d] for d in v.dims }
+        return chunks
+
+    def rechunk( self, chunk_sizes: Dict[str,int], **kwargs ):
         max_memory =   kwargs.get( 'max_memory', "250MB" )
         target_store = kwargs.get( 'target_store', self.data_dir )
         temp_store =   kwargs.get( 'temp_store', self.cache_dir )
-        var_chunks = {v: chunks for v in self.dset.data_vars}
+        chunks = self.get_chunks( chunk_sizes )
         if isinstance( target_store, str ):
             target_store = f"{target_store}/{self.name}.zarr"
             shutil.rmtree( target_store, ignore_errors= True )
@@ -44,5 +50,5 @@ class Rechunker:
         if isinstance( temp_store, str):
             temp_store =  f"{temp_store}/{self.name}.zarr"
             shutil.rmtree( temp_store, ignore_errors= True )
-            print(f"Using temp_store: {temp_store} with chunks = {var_chunks}")
-        return rechunk( self.dset, var_chunks, max_memory,  target_store=target_store, temp_store=temp_store, **kwargs )
+            print(f"Using temp_store: {temp_store} with chunks = {chunks}")
+        return rechunk( self.dset, chunks, max_memory,  target_store=target_store, temp_store=temp_store, **kwargs )
