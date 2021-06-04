@@ -41,7 +41,8 @@ class Rechunker:
         return chunks
 
     def rechunk( self, chunk_sizes: Dict[str,int], **kwargs ):
-        max_memory =   kwargs.get( 'max_memory', "250MB" )
+        t0 = time.time()
+        max_memory =   kwargs.get( 'max_memory', "500MB" )
         target_store = kwargs.get( 'target_store', self.data_dir )
         temp_store =   kwargs.get( 'temp_store', self.cache_dir )
         chunks = self.get_chunks( chunk_sizes )
@@ -55,5 +56,5 @@ class Rechunker:
             print(f"Using temp_store: {temp_store} with chunks = {chunks}")
         rechunked: Rechunked = rechunk( self.dset, chunks, max_memory, target_store=target_store, temp_store=temp_store, **kwargs )
         rv = rechunked.execute()
-        print( "Rechunking completed.")
+        print( f"Rechunking completed in {time.time()-t0} sec.")
         return rv
