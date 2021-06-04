@@ -33,6 +33,8 @@ class Rechunker:
         return Rechunker( name, dset, data_dir=data_dir, **kwargs  )
 
     def get_chunks(self, chunk_sizes: Dict[str,int] ):
+        for d in self.dset.dims:
+            assert d in chunk_sizes.keys(), f"Missing chunk_size declaration for dim {d}"
         chunks = {}
         for (vname,v) in self.dset.data_vars.items():
             chunks[vname] = { d: chunk_sizes[d] for d in v.dims }
