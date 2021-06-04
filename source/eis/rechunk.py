@@ -3,7 +3,7 @@ import os, time, numpy as np
 from eis.smce import eis3, exception_handled
 from typing import List, Union, Dict, Callable, Tuple, Optional, Any, Type, Mapping, Hashable
 from zarr.storage import DirectoryStore
-from rechunker import rechunk
+from rechunker import rechunk, Rechunked
 from eis.smce import eis3
 import shutil
 
@@ -53,4 +53,5 @@ class Rechunker:
             temp_store =  f"{temp_store}/{self.name}.zarr"
             shutil.rmtree( temp_store, ignore_errors= True )
             print(f"Using temp_store: {temp_store} with chunks = {chunks}")
-        rechunk( self.dset, chunks, max_memory, target_store=target_store, temp_store=temp_store, **kwargs )
+        rechunked: Rechunked = rechunk( self.dset, chunks, max_memory, target_store=target_store, temp_store=temp_store, **kwargs )
+        return rechunked.execute()
