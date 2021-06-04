@@ -53,4 +53,4 @@ class Rechunker:
             temp_store =  f"{temp_store}/{self.name}.zarr"
             shutil.rmtree( temp_store, ignore_errors= True )
             print(f"Using temp_store: {temp_store} with chunks = {chunks}")
-        return rechunk( self.dset, chunks, max_memory,  target_store=target_store, temp_store=temp_store, **kwargs )
+        rechunk( self.dset, chunks, max_memory, target_store=target_store, temp_store=temp_store, **kwargs )
