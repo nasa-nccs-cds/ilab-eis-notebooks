@@ -5,6 +5,7 @@ from typing import List, Union, Dict, Callable, Tuple, Optional, Any, Type, Mapp
 from zarr.storage import DirectoryStore
 from rechunker import rechunk
 from eis.smce import eis3
+import shutil
 
 
 class Rechunker:
@@ -38,8 +39,10 @@ class Rechunker:
         var_chunks = {v: chunks for v in self.dset.data_vars}
         if isinstance( target_store, str ):
             target_store = f"{target_store}/{self.name}.zarr"
+            shutil.rmtree(target_store)
             print( f"Writing result to {target_store} with max-memory-per-worker set to {max_memory}" )
         if isinstance( temp_store, str):
             temp_store =  f"{temp_store}/{self.name}.zarr"
+            shutil.rmtree(temp_store)
             print(f"Using temp_store: {temp_store} with chunks = {var_chunks}")
         return rechunk( self.dset, var_chunks, max_memory,  target_store=target_store, temp_store=temp_store, **kwargs )
