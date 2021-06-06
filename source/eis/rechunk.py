@@ -56,6 +56,6 @@ class Rechunker:
             print(f"Using temp_store: {temp_store} with chunks = {chunks}")
         rechunked: Rechunked = rechunk( self.dset, chunks, max_memory, target_store=target_store, temp_store=temp_store, **kwargs )
         rv = rechunked.execute()
-        print( f"Rechunking completed in {time.time()-t0} sec.")
+        print( f"Rechunking completed in {(time.time()-t0)/60.0} min.")
         shutil.rmtree( temp_store, ignore_errors=True )
         return rv
