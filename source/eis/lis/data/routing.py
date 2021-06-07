@@ -30,7 +30,7 @@ class LISRoutingData:
 
     @classmethod
     def from_disk( cls, path: str, **kwargs ) -> "LISRoutingData":
-        dset = xr.open_zarr( path, consolidated=True, **kwargs )
+        dset = xr.open_zarr( path, **kwargs )
         return LISRoutingData( dset )
 
     # def nearest_grid( self, lon, lat ) -> List[int]:
