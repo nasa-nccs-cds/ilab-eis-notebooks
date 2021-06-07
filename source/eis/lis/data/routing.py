@@ -28,6 +28,11 @@ class LISRoutingData:
         dset = eis3().get_zarr_dataset(bucket, key)
         return LISRoutingData( dset )
 
+    @classmethod
+    def from_disk( cls, path: str, **kwargs ) -> "LISRoutingData":
+        dset = xr.open_zarr( path, consolidated=True, **kwargs )
+        return LISRoutingData( dset )
+
     # def nearest_grid( self, lon, lat ) -> List[int]:
     #     idx = distance.cdist( np.array([lon,lat]), self._pts ).argmin()
     #     return  [ int(self._loc['east_west'].iloc[idx]), int(self._loc['north_south'].iloc[idx]) ]
