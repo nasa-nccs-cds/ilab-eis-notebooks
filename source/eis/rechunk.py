@@ -41,6 +41,7 @@ class Rechunker:
         return chunks
 
     def rechunk( self, chunk_sizes: Dict[str,int], **kwargs ):
+        from eis.s3 import s3m
         t0 = time.time()
         max_memory =   kwargs.pop( 'max_memory', 100 ) * 1000 * 1000
         target_store = kwargs.pop( 'target_store', self.data_dir )
@@ -50,6 +51,8 @@ class Rechunker:
             target_store = f"{target_store}/{self.name}.zarr"
             if target_store.startswith("/"):
                 shutil.rmtree( target_store, ignore_errors= True )
+            elif target_store.startswith("s3:"):
+                target_store = s3m().get_store( target_store, "w")
             print( f"Writing result to {target_store} with max-memory-per-worker set to {max_memory} bytes" )
         if isinstance( temp_store, str):
             temp_store =  f"{temp_store}/{self.name}.zarr"
