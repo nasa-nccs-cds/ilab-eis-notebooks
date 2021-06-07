@@ -8,4 +8,13 @@ Create your conda environment as follows:
 
     > conda create --name ilab_eis_notebooks 
     > conda activate ilab_eis_notebooks
-    > conda install -c conda-forge panel scipy pandas hvplot geopandas geoviews datashader holoviews numpy pandas xarray s3fs dask distributed 
+
+
+ 
+### Upload
+
+>> aws s3 mv  <local_zarr_path>  <s3_zarr_path> --acl bucket-owner-full-control --recursive
+
+For example:
+
+>> aws s3 mv  /home/jovyan/efs/data/rechunk/LIS.OL_1km.ROUTING.LIS_HIST.d01.zarr s3://eis-dh-hydro/rechunk/LIS/OL_1km/ROUTING/LIS_HIST.d01.zarr   --acl bucket-owner-full-control --recursive
