@@ -19,7 +19,7 @@ class LISGageDataset:
         idtype = kwargs.get( 'idtype', str )
         geocols = kwargs.get( 'geom', dict( x=3, y=4 ) )
         datacols = kwargs.get( 'dcols', [] )
-        self._empty_dataframe = None
+        self._null_data = None
         usecols = [ idcol, geocols['x'], geocols['y'] ] + datacols
         self.header: pd.DataFrame = pd.read_csv( header_file, usecols=usecols, delim_whitespace=True, names=['id', 'lon', 'lat'], dtype={'id': idtype} )
         self._gage_data: List[pd.DataFrame] = []
@@ -47,9 +47,10 @@ class LISGageDataset:
     def gage_data_graph( self, index: List[int] ):
         logger = eis3().get_logger()
         if (index is None) or (len(index) == 0):
-            return self._empty_dataframe
-        logger.info( f"gage_data_graph: index = {index[0]}, data len = {len(self._gage_data)}")
-        gage_data: pd.DataFrame = self._gage_data[ index[0] ]
+            gage_data: pd.DataFrame =  self._null_data
+        else:
+            logger.info( f"gage_data_graph: index = {index[0]}, data len = {len(self._gage_data)}")
+            gage_data: pd.DataFrame = self._gage_data[ index[0] ]
         return gage_data.hvplot( title="Gage Data")
 
     def plot(self, **kwargs ):
@@ -67,8 +68,8 @@ class LISGageDataset:
         gage_id = filepath.split('/')[-1].strip('.txt')
         df = pd.read_csv( filepath, names=['date', gage_id], delim_whitespace=True,  parse_dates=['date'], index_col='date' )
         self._gage_data.append( df )
-        if self._empty_dataframe is None:
-            self._empty_dataframe = self.get_empty_dataframe( df )
+        if self._null_data is None:
+            self._null_data = self.get_empty_dataframe(df)
 
     def add_gage_files(self, gage_file_paths: Optional[List[str]] ):
         if gage_file_paths is not None:
@@ -88,8 +89,3 @@ class LISGageDataset:
 
     def gage_data(self, gage_index: int ) -> pd.DataFrame:
         return self._gage_data[gage_index]
-
-    def plot_data( self, **kwargs ):
-        lplot = self.gage_data.plot( figsize= kwargs.get( 'figsize', (12, 6) ) )
-        lplot.figure.set_facecolor('yellow')
-        return lplot
