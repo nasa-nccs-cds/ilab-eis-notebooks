@@ -41,15 +41,16 @@ class LISGageDataset:
     def gage_data_graph( self, index ):
         gage_data: pd.DataFrame = self._gage_data[index]
         print( f"Gage Data: {gage_data}" )
+        return gage_data.hvplot( )
 
     def plot(self, **kwargs ):
         color = kwargs.pop( 'color', 'red' )
         size  = kwargs.pop( 'size', 10 )
         tools = kwargs.pop( 'tools', [ 'tap', 'hover' ] )
-        pts_opts = gv.opts.Points( color=color, size=size, tools=tools, **kwargs )
+        pts_opts = gv.opts.Points( color=color, size=size, tools=tools, nonselection_fill_alpha=0.7, nonselection_line_alpha=1.0,  **kwargs )
         tiles = gv.tile_sources.EsriImagery()
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
-        select_stream = Selection1D( source=dpoints )
+        select_stream = Selection1D( default=[0], source=dpoints )
         line = hv.DynamicMap( self.gage_data_graph, streams=[select_stream] )
         pn.Row( tiles * dpoints, line ) # pn.Column(var_select, line))
 
@@ -64,8 +65,11 @@ class LISGageDataset:
                 self.add_gage_file( gage_file )
 
     @property
-    def gage_data(self) -> pd.DataFrame:
+    def gages_data(self) -> pd.DataFrame:
         return pd.concat( self._gage_data, axis=1 )
+
+    def gage_data(self, gage_index: int ) -> pd.DataFrame:
+        return self._gage_data[gage_index]
 
     def plot_data( self, **kwargs ):
         lplot = self.gage_data.plot( figsize= kwargs.get( 'figsize', (12, 6) ) )
