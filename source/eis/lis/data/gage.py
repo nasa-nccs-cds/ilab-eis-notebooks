@@ -7,10 +7,12 @@ from matplotlib.axes import SubplotBase
 import geopandas as gpd
 import geoviews as gv
 import holoviews as hv
+from eis.smce import eis3
 
 class LISGageDataset:
 
     def __init__(self, header_file: str, gage_files: List[str]=None, **kwargs):
+        logger = eis3().get_logger()
         idcol = kwargs.get( 'idcol', 0 )
         idtype = kwargs.get( 'idtype', str )
         geocols = kwargs.get( 'geom', dict( x=3, y=4 ) )
@@ -19,7 +21,7 @@ class LISGageDataset:
         self.header: pd.DataFrame = pd.read_csv( header_file, usecols=usecols, delim_whitespace=True, names=['id', 'lon', 'lat'], dtype={'id': idtype} )
         self._gage_data: List[pd.DataFrame] = []
         self.add_gage_files( gage_files )
-        print( f" *** Creating LISGageDataset, header file = {header_file}, gage files = {gage_files}" )
+        logger.info( f" *** Creating LISGageDataset, header file = {header_file}, gage files = {gage_files}" )
 
     @property
     def gage_map(self) -> gpd.GeoDataFrame:
