@@ -31,12 +31,12 @@ class LISGageDataset:
     def plot_map(self, **kwargs ):
         color = kwargs.pop( 'color', 'red' )
         size  = kwargs.pop( 'size', 10 )
-        tools = kwargs.pop( 'tools', ['hover'] )
+        tools = kwargs.pop( 'tools', [ 'tap', 'hover' ] )
         pts_opts = gv.opts.Points( color=color, size=size, tools=tools, **kwargs )
         tiles = gv.tile_sources.EsriImagery()
-        dmap = hv.DynamicMap( self.points.opts( pts_opts ) ).opts(height=400, width=600)
-        select_stream = Selection1D(source=dmap)
-        return tiles * dmap
+        dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
+        select_stream = Selection1D(source=dpoints)
+        return tiles * dpoints
 
     def add_gage_file( self, filepath: str ):
         gage_id = filepath.split('/')[-1].strip('.txt')
