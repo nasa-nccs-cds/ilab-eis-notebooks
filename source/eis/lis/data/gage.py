@@ -43,8 +43,9 @@ class LISGageDataset:
 
     def gage_data_graph( self, index: List[int] ):
         logger = eis3().get_logger()
-        logger.info( f"gage_data_graph: index = {index[0]}, data len = {len(self._gage_data)}")
-        gage_data: pd.DataFrame = self._gage_data[ index[0] ]
+        idx = 0 if (len(index) == 0) else index[0]
+        logger.info( f"gage_data_graph: index = {idx}, data len = {len(self._gage_data)}")
+        gage_data: pd.DataFrame = self._gage_data[ idx ]
         return gage_data.hvplot( title="Gage Data")
 
     def plot(self, **kwargs ):
