@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import panel as pn
 from matplotlib.axes import SubplotBase
 import geopandas as gpd
+import numpy as np
 import geoviews as gv
 import holoviews as hv
 from eis.smce import eis3
@@ -18,6 +19,7 @@ class LISGageDataset:
         idtype = kwargs.get( 'idtype', str )
         geocols = kwargs.get( 'geom', dict( x=3, y=4 ) )
         datacols = kwargs.get( 'dcols', [] )
+        self._empty_dataframe = None
         usecols = [ idcol, geocols['x'], geocols['y'] ] + datacols
         self.header: pd.DataFrame = pd.read_csv( header_file, usecols=usecols, delim_whitespace=True, names=['id', 'lon', 'lat'], dtype={'id': idtype} )
         self._gage_data: List[pd.DataFrame] = []
@@ -44,16 +46,17 @@ class LISGageDataset:
 
     def gage_data_graph( self, index: List[int] ):
         logger = eis3().get_logger()
-        idx = 0 if (len(index) == 0) else index[0]
-        logger.info( f"gage_data_graph: index = {idx}, data len = {len(self._gage_data)}")
-        gage_data: pd.DataFrame = self._gage_data[ idx ]
+        if (index is None) or (len(index) == 0):
+            return self._empty_dataframe
+        logger.info( f"gage_data_graph: index = {index[0]}, data len = {len(self._gage_data)}")
+        gage_data: pd.DataFrame = self._gage_data[ index[0] ]
         return gage_data.hvplot( title="Gage Data")
 
     def plot(self, **kwargs ):
         color = kwargs.pop( 'color', 'red' )
         size  = kwargs.pop( 'size', 10 )
         tools = kwargs.pop( 'tools', [ 'tap', 'hover' ] )
-        pts_opts = gv.opts.Points( color=color, size=size, tools=tools, nonselection_fill_alpha=0.7, nonselection_line_alpha=1.0,  **kwargs )
+        pts_opts = gv.opts.Points( color=color, size=size, tools=tools, nonselection_fill_alpha=0.3, nonselection_line_alpha=0.3,  **kwargs )
         tiles = gv.tile_sources.EsriImagery()
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         select_stream = Selection1D( default=[0], source=dpoints )
@@ -64,11 +67,20 @@ class LISGageDataset:
         gage_id = filepath.split('/')[-1].strip('.txt')
         df = pd.read_csv( filepath, names=['date', gage_id], delim_whitespace=True,  parse_dates=['date'], index_col='date' )
         self._gage_data.append( df )
+        if self._empty_dataframe is None:
+            self._empty_dataframe = self.get_empty_dataframe( df )
 
     def add_gage_files(self, gage_file_paths: Optional[List[str]] ):
         if gage_file_paths is not None:
             for gage_file in gage_file_paths:
                 self.add_gage_file( gage_file )
+
+    def get_empty_dataframe(self, dframe: pd.DataFrame ) -> pd.DataFrame:
+        df = dframe.copy( deep = True )
+        for col in df.columns:
+            if np.issubdtype(df[col].dtype, np.number):
+                df[col].values[:] = 0
+        return df
 
     @property
     def gages_data(self) -> pd.DataFrame:
