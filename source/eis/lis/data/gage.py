@@ -8,6 +8,7 @@ import geopandas as gpd
 import geoviews as gv
 import holoviews as hv
 from eis.smce import eis3
+import hvplot.pandas
 
 class LISGageDataset:
 
