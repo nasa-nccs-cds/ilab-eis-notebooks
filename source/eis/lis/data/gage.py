@@ -38,8 +38,8 @@ class LISGageDataset:
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         return tiles * dpoints
 
-    def gage_data_graph( self, index ):
-        gage_data: pd.DataFrame = self._gage_data[index]
+    def gage_data_graph( self, index: List[int] ):
+        gage_data: pd.DataFrame = self._gage_data[ index[0] ]
         return gage_data.hvplot( title="Gage Data")
 
     def plot(self, **kwargs ):
