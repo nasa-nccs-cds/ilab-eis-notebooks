@@ -2,6 +2,7 @@ import pandas as pd
 from typing import List, Union, Dict, Callable, Tuple, Optional, Any, Type, Mapping, Hashable
 from holoviews.streams import Selection1D, Params
 import matplotlib.pyplot as plt
+import panel as pn
 from matplotlib.axes import SubplotBase
 import geopandas as gpd
 import geoviews as gv
@@ -35,8 +36,22 @@ class LISGageDataset:
         pts_opts = gv.opts.Points( color=color, size=size, tools=tools, **kwargs )
         tiles = gv.tile_sources.EsriImagery()
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
-        select_stream = Selection1D(source=dpoints)
         return tiles * dpoints
+
+    def gage_data_graph( self, index ):
+        gage_data: pd.DataFrame = self._gage_data[index]
+        print( f"Gage Data: {gage_data}" )
+
+    def plot(self, **kwargs ):
+        color = kwargs.pop( 'color', 'red' )
+        size  = kwargs.pop( 'size', 10 )
+        tools = kwargs.pop( 'tools', [ 'tap', 'hover' ] )
+        pts_opts = gv.opts.Points( color=color, size=size, tools=tools, **kwargs )
+        tiles = gv.tile_sources.EsriImagery()
+        dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
+        select_stream = Selection1D(source=dpoints)
+        line = hv.DynamicMap( self.gage_data_graph, streams=[select_stream])
+        pn.Row( tiles * dpoints, line ) # pn.Column(var_select, line))
 
     def add_gage_file( self, filepath: str ):
         gage_id = filepath.split('/')[-1].strip('.txt')
