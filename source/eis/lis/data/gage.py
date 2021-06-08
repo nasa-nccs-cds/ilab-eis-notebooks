@@ -48,16 +48,18 @@ class LISGageDataset:
         logger = eis3().get_logger()
         if (index is None) or (len(index) == 0):
             gage_data: pd.DataFrame =  self._null_data
+            return gage_data.hvplot(title=f"No Gage")
         else:
-            logger.info( f"gage_data_graph: index = {index[0]}, data len = {len(self._gage_data)}")
-            gage_data: pd.DataFrame = self._gage_data[ index[0] ]
-        return gage_data.hvplot( title="Gage Data")
+            idx = index[0]
+            logger.info( f"gage_data_graph: index = {idx}, data len = {len(self._gage_data)}")
+            gage_data: pd.DataFrame = self._gage_data[ idx ]
+            return gage_data.hvplot( title=f"Gage[{idx}]")
 
     def plot(self, **kwargs ):
         color = kwargs.pop( 'color', 'red' )
         size  = kwargs.pop( 'size', 10 )
         tools = kwargs.pop( 'tools', [ 'tap', 'hover' ] )
-        pts_opts = gv.opts.Points( color=color, size=size, tools=tools, nonselection_fill_alpha=0.3, nonselection_line_alpha=0.3,  **kwargs )
+        pts_opts = gv.opts.Points( color=color, size=size, tools=tools, nonselection_fill_alpha=0.3, nonselection_line_alpha=0.6,  **kwargs )
         tiles = gv.tile_sources.EsriImagery()
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         select_stream = Selection1D( default=[0], source=dpoints )
