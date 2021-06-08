@@ -40,8 +40,7 @@ class LISGageDataset:
 
     def gage_data_graph( self, index ):
         gage_data: pd.DataFrame = self._gage_data[index]
-        print( f"Gage Data: {gage_data}" )
-        return gage_data.hvplot( )
+        return gage_data.hvplot( title="Gage Data")
 
     def plot(self, **kwargs ):
         color = kwargs.pop( 'color', 'red' )
@@ -52,7 +51,7 @@ class LISGageDataset:
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         select_stream = Selection1D( default=[0], source=dpoints )
         line = hv.DynamicMap( self.gage_data_graph, streams=[select_stream] )
-        pn.Row( tiles * dpoints, line ) # pn.Column(var_select, line))
+        return pn.Row( tiles * dpoints, line ) # pn.Column(var_select, line))
 
     def add_gage_file( self, filepath: str ):
         gage_id = filepath.split('/')[-1].strip('.txt')
