@@ -1,9 +1,11 @@
 import pandas as pd
 from typing import List, Union, Dict, Callable, Tuple, Optional, Any, Type, Mapping, Hashable
+from holoviews.streams import Selection1D, Params
 import matplotlib.pyplot as plt
 from matplotlib.axes import SubplotBase
 import geopandas as gpd
 import geoviews as gv
+import holoviews as hv
 
 class LISGageDataset:
 
@@ -32,7 +34,9 @@ class LISGageDataset:
         tools = kwargs.pop( 'tools', ['hover'] )
         pts_opts = gv.opts.Points( color=color, size=size, tools=tools, **kwargs )
         tiles = gv.tile_sources.EsriImagery()
-        return tiles * self.points.opts( pts_opts )
+        dmap = hv.DynamicMap( self.points.opts( pts_opts ) ).opts(height=400, width=600)
+        select_stream = Selection1D(source=dmap)
+        return tiles * dmap
 
     def add_gage_file( self, filepath: str ):
         gage_id = filepath.split('/')[-1].strip('.txt')
