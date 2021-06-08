@@ -19,6 +19,7 @@ class LISGageDataset:
         self.header: pd.DataFrame = pd.read_csv( header_file, usecols=usecols, delim_whitespace=True, names=['id', 'lon', 'lat'], dtype={'id': idtype} )
         self._gage_data: List[pd.DataFrame] = []
         self.add_gage_files( gage_files )
+        print( f" *** Creating LISGageDataset, header file = {header_file}, gage files = {gage_files}" )
 
     @property
     def gage_map(self) -> gpd.GeoDataFrame:
