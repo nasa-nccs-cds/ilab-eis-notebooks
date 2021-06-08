@@ -42,6 +42,8 @@ class LISGageDataset:
         return tiles * dpoints
 
     def gage_data_graph( self, index: List[int] ):
+        logger = eis3().get_logger()
+        logger.info( f"gage_data_graph: index = {index[0]}, data len = {len(self._gage_data)}")
         gage_data: pd.DataFrame = self._gage_data[ index[0] ]
         return gage_data.hvplot( title="Gage Data")
 
