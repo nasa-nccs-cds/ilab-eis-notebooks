@@ -88,7 +88,7 @@ class LISGageDataset:
     def xa_gage_data(self, gage_index: int ) -> xa.DataArray:
         gage_dataset: xa.Dataset = self._gage_data[gage_index].to_xarray()
         dvars = list(gage_dataset.data_vars.keys())
-        return gage_dataset[dvars[0]]
+        return gage_dataset[dvars[0]].rename( date="time" )
 
     @exception_handled
     def routing_plus_gage_data_graph( self, index: List[int], vname: str ):
@@ -108,9 +108,9 @@ class LISGageDataset:
         gage_data: xa.DataArray = self.xa_gage_data( idx )
         ( streamflow_adata, gage_adata ) = xa.align( streamflow_data, gage_data )
         if null_data:
-            self._null_plot = xa.zeros_like(gage_adata).hvplot("time", title=f"No Gages")
+            self._null_plot = xa.zeros_like(gage_adata).hvplot( title=f"No Gages")
             return self._null_plot
-        return streamflow_adata.hvplot("time",title=svname) * gage_adata.hvplot("time",title=f"Gage[{idx}]")
+        return streamflow_adata.hvplot(title=svname) * gage_adata.hvplot(title=f"Gage[{idx}]")
 
     def add_gage_file( self, filepath: str ):
         gage_id = filepath.split('/')[-1].strip('.txt')
