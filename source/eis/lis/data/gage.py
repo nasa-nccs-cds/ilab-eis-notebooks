@@ -60,7 +60,7 @@ class LISGageDataset:
         color = kwargs.pop( 'color', 'red' )
         size  = kwargs.pop( 'size', 10 )
         tools = kwargs.pop( 'tools', [ 'tap', 'hover' ] )
-        pts_opts = gv.opts.Points( color=color, size=size, tools=tools, nonselection_fill_alpha=0.3, nonselection_line_alpha=0.6,  **kwargs )
+        pts_opts = gv.opts.Points( color=color, size=size, tools=tools, nonselection_fill_alpha=0.2, nonselection_line_alpha=0.6,  **kwargs )
         tiles = gv.tile_sources.EsriImagery()
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         select_stream = Selection1D( default=[0], source=dpoints )
