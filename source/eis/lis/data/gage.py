@@ -107,6 +107,7 @@ class LISGageDataset:
         svname = streamflow_data.attrs['vname']
         gage_data: xa.DataArray = self.xa_gage_data( idx )
         ( streamflow_adata, gage_adata ) = xa.align( streamflow_data, gage_data )
+        logger.info(f"streamflow_adata: shape = {streamflow_adata.shape}, data = {streamflow_adata[:]}")
         if null_data:
             self._null_plot = xa.zeros_like(gage_adata).hvplot( title=f"No Gages")
             return self._null_plot
