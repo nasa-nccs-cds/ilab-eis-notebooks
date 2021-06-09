@@ -70,7 +70,7 @@ class LISGageDataset:
             rdata_graph = routing_data.var_graph( vname, lon, lat )
             logger.info( f"gage_data_graph: index = {idx}, lon: {lon}, lat: {lat}, graph: {rdata_graph}")
             gage_data_graph = self._gage_data[ idx ].hvplot( title=f"Gage[{idx}]")
-            return gage_data_graph * rdata_graph
+            return gage_data_graph # * rdata_graph
 
     def plot(self, **kwargs ):
         color = kwargs.pop( 'color', 'red' )
