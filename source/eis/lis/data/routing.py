@@ -74,20 +74,17 @@ class LISRoutingData:
 
     @exception_handled
     def var_graph( self, vname: str, x: float, y: float ):
-            logger = eis3().get_logger()
-            try:
-                t0 = time.time()
-                ics = self.get_indices(x, y)
-                logger.info( f"Plotting var_graph[{vname}]: lon={x} ({ics['lon']}), lat={y} ({ics['lat']})")
-                gdata = self.dset[vname].isel( lon= ics['lon'], lat= ics['lat'] )
-                gdata.compute()
-                t1 = time.time()
-                graph_plot = gdata.hvplot(title=vname)
-                logger.info( f"Result shape = {gdata.shape}, exec times> read: {t1-t0}, plot: {time.time()-t1} sec" )
-                return graph_plot
-            except Exception as err:
-                logger.error(f"Graph plot generated exception: {err}\n{traceback.format_exc()}")
-                raise err
+        logger = eis3().get_logger()
+        t0 = time.time()
+        ics = self.get_indices(x, y)
+        logger.info( f"Plotting var_graph[{vname}]: lon={x} ({ics['lon']}), lat={y} ({ics['lat']})")
+        gdata = self.dset[vname].isel( lon= ics['lon'], lat= ics['lat'] )
+        gdata.compute()
+        t1 = time.time()
+        graph_plot = gdata.hvplot(title=vname)
+        logger.info( f"Result shape = {gdata.shape}, exec times> read: {t1-t0}, plot: {time.time()-t1} sec" )
+        return graph_plot
+
 
     def dvar_graph( self, streams ) -> hv.DynamicMap:
         return hv.DynamicMap( self.var_graph, streams=streams )

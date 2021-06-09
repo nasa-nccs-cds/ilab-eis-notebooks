@@ -77,11 +77,26 @@ class LISGageDataset:
         tiles = gv.tile_sources.EsriImagery()
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         select_stream = Selection1D( default=[0], source=dpoints )
-        line = hv.DynamicMap( self.gage_data_graph, streams=[select_stream] )
+        line = hv.DynamicMap( self.routing_data_graph, streams=[select_stream] )
         return pn.Row( tiles * dpoints, line ) # pn.Column(var_select, line))
 
     @exception_handled
     def routing_data_graph( self, index: List[int] ):
+        logger = eis3().get_logger()
+        if (index is None) or (len(index) == 0):
+            gage_data: pd.DataFrame =  self._null_data
+            return gage_data.hvplot(title=f"No Gage")
+        else:
+            idx = index[0]
+            vname = 'Streamflow_tavg'
+            lon, lat = self.header['lon'][idx], self.header['lat'][idx]
+            logger.info( f"routing_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
+            rdata_graph = self._routing_data.var_graph(vname, lon, lat)
+            gage_data: pd.DataFrame = self._gage_data[ idx ]
+            return gage_data.hvplot( title=f"Gage[{idx}]")
+
+    @exception_handled
+    def routing_data_graph1( self, index: List[int] ):
         logger = eis3().get_logger()
         if (index is None) or (len(index) == 0):
             gage_data: pd.DataFrame =  self._null_data
