@@ -114,7 +114,7 @@ class LISGageDataset:
         if null_data:
             self._null_plot = xa.zeros_like(gage_adata).hvplot( title=f"No Gages")
             return self._null_plot
-        return streamflow_adata.hvplot() * gage_adata.hvplot()
+        return hv.Overlay( [streamflow_adata.hvplot(), gage_adata.hvplot()] )
 
     def add_gage_file( self, filepath: str ):
         gage_id = filepath.split('/')[-1].strip('.txt')
