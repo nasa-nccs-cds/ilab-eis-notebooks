@@ -69,6 +69,7 @@ class LISGageDataset:
             gage_data: pd.DataFrame = self._gage_data[ idx ]
             return gage_data.hvplot( title=f"Gage[{idx}]")
 
+    @exception_handled
     def plot_routing_data(self, routing_data: LISRoutingData, **kwargs ):
         color = kwargs.pop( 'color', 'red' )
         size  = kwargs.pop( 'size', 10 )
@@ -94,7 +95,9 @@ class LISGageDataset:
             logger.info( f"routing_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
             rdata_graph = self._routing_data.var_graph(vname, lon, lat)
             gage_data: pd.DataFrame = self._gage_data[ idx ]
-            return gage_data.hvplot( title=f"Gage[{idx}]") * rdata_graph
+            result =  gage_data.hvplot( title=f"Gage[{idx}]") * rdata_graph
+            logger.info(f"*** overlay_graph: {result}")
+            return result
 
     @exception_handled
     def routing_data_graph1( self, index: List[int] ):
