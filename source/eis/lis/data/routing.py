@@ -82,10 +82,12 @@ class LISRoutingData:
         logger.info( f"Plotting var_graph[{vname}]: lon={x} ({ics['lon']}), lat={y} ({ics['lat']})")
         logger.info( f" -->> var_data[{vname}]: shape = {var_data.shape}, dims={var_data.dims}" )
         gdata = var_data.isel( lon= ics['lon'], lat= ics['lat'] )
+        logger.info(f" -->> gdata[{vname}]: shape = {gdata.shape}, dims={gdata.dims}")
         gdata.compute()
         t1 = time.time()
+        logger.info(f"Result exec times> read: {t1 - t0}, plot: {time.time() - t1} sec")
         graph_plot = gdata.hvplot(title=vname)
-        logger.info( f"Result shape = {gdata.shape}, exec times> read: {t1-t0}, plot: {time.time()-t1} sec" )
+        logger.info( f"hvplot created." )
         return graph_plot
 
     @exception_handled
