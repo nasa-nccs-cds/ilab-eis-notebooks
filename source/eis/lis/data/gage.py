@@ -2,7 +2,7 @@ import pandas as pd
 from typing import List, Union, Dict, Callable, Tuple, Optional, Any, Type, Mapping, Hashable
 from holoviews.streams import Selection1D, Params, Tap
 import panel as pn
-from functools import partial
+import xarray as xa
 import geopandas as gpd
 from eis.lis.data.routing import LISRoutingData
 import numpy as np
@@ -66,8 +66,9 @@ class LISGageDataset:
             idx = index[0]
             lon, lat = self.header['lon'][idx], self.header['lat'][idx]
             logger.info( f"gage_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
-            gage_data: pd.DataFrame = self._gage_data[ idx ]
-            return gage_data.hvplot( 'time', title=f"Gage[{idx}]")
+            gage_data: xa.Dataset = self._gage_data[ idx ].to_xarray()
+            dvars = list(gage_data.data_vars.keys())
+            return gage_data[dvars[0]].hvplot( 'time', title=f"Gage[{idx}]")
 
     @exception_handled
     def plot_routing_data(self, routing_data: LISRoutingData, **kwargs ):
@@ -100,21 +101,6 @@ class LISGageDataset:
             streamflow_graph: hv.Curve = streamflow_data.hvplot( "time", title=streamflow_data.attrs['vname'] )
             logger.info(f"*** streamflow_graph: {streamflow_graph}")
             return streamflow_graph
-
-    @exception_handled
-    def routing_data_graph1( self, index: List[int] ):
-        logger = eis3().get_logger()
-        if (index is None) or (len(index) == 0):
-            gage_data: pd.DataFrame =  self._null_data
-            return gage_data.hvplot(title=f"No Gage")
-        else:
-            idx = index[0]
-            vname = 'Streamflow_tavg'
-            lon, lat = self.header['lon'][idx], self.header['lat'][idx]
-            rdata_graph = self._routing_data.var_graph( vname, lon, lat )
-            logger.info( f"routing_data_graph: index = {idx}, lon: {lon}, lat: {lat}, graph: {rdata_graph}")
-            gage_data_graph = self._gage_data[ idx ].hvplot( title=f"Gage[{idx}]")
-            return gage_data_graph # * rdata_graph
 
     def add_gage_file( self, filepath: str ):
         gage_id = filepath.split('/')[-1].strip('.txt')
