@@ -8,7 +8,7 @@ import geopandas as gpd
 import numpy as np
 import geoviews as gv
 import holoviews as hv
-from eis.smce import eis3
+from eis.smce import eis3, exception_handled
 import hvplot.pandas
 
 class LISGageDataset:
@@ -44,6 +44,7 @@ class LISGageDataset:
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         return tiles * dpoints
 
+    @exception_handled
     def gage_data_graph( self, index: List[int] ):
         logger = eis3().get_logger()
         if (index is None) or (len(index) == 0):
