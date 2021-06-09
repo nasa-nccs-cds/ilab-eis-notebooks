@@ -94,7 +94,7 @@ class LISGageDataset:
             logger.info( f"routing_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
             rdata_graph = self._routing_data.var_graph(vname, lon, lat)
             gage_data: pd.DataFrame = self._gage_data[ idx ]
-            return gage_data.hvplot( title=f"Gage[{idx}]")
+            return gage_data.hvplot( title=f"Gage[{idx}]") * rdata_graph
 
     @exception_handled
     def routing_data_graph1( self, index: List[int] ):

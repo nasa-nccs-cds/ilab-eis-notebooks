@@ -78,16 +78,12 @@ class LISRoutingData:
         logger = eis3().get_logger()
         t0 = time.time()
         ics = self.get_indices(x, y)
-        var_data = self.dset[vname]
         logger.info( f"Plotting var_graph[{vname}]: lon={x} ({ics['lon']}), lat={y} ({ics['lat']})")
-        logger.info( f" -->> var_data[{vname}]: shape = {var_data.shape}, dims={var_data.dims}" )
-        gdata = var_data.isel( lon= ics['lon'], lat= ics['lat'] )
-        logger.info(f" -->> gdata[{vname}]: shape = {gdata.shape}, dims={gdata.dims}")
+        gdata = self.dset[vname].isel( lon= ics['lon'], lat= ics['lat'] )
         gdata.compute()
         t1 = time.time()
-        logger.info(f"Result exec times> read: {t1 - t0}, plot: {time.time() - t1} sec")
+        logger.info(f"-->> gdata[{vname}] shape = {gdata.shape}, dims={gdata.dims}: read time= {t1 - t0}, plot time= {time.time() - t1} sec")
         graph_plot = gdata.hvplot(title=vname)
-        logger.info( f"hvplot created." )
         return graph_plot
 
     @exception_handled
