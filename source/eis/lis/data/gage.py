@@ -1,6 +1,6 @@
 import pandas as pd
 from typing import List, Union, Dict, Callable, Tuple, Optional, Any, Type, Mapping, Hashable
-from holoviews.streams import Selection1D, Params
+from holoviews.streams import Selection1D, Params, Tap
 import panel as pn
 from functools import partial
 import geopandas as gpd
@@ -81,6 +81,7 @@ class LISGageDataset:
         tiles = gv.tile_sources.EsriImagery()
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         select_stream = Selection1D( default=[0], source=dpoints )
+#        point_stream = Tap(x=self._xc, y=self._yc, source=tiles)
         line = hv.DynamicMap( self.routing_data_graph, streams=[ select_stream, var_stream ] )
         return pn.Row( tiles * dpoints, pn.Column(var_select, line) )
 
@@ -89,14 +90,14 @@ class LISGageDataset:
         logger = eis3().get_logger()
         if (index is None) or (len(index) == 0):
             gage_data: pd.DataFrame =  self._null_data
-            return gage_data.hvplot(title=f"No Gage")
+            return gage_data.hvplot().rename( index={'date': 'time'})
         else:
             idx = index[0]
             lon, lat = self.header['lon'][idx], self.header['lat'][idx]
             logger.info( f"routing_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
             rdata_graph = self._routing_data.var_graph(vname, lon, lat)
-            gage_data: pd.DataFrame = self._gage_data[ idx ].rename( index={'date': 'time'})
-            result =  gage_data.hvplot() * rdata_graph
+            gage_data: pd.DataFrame = self._gage_data[ idx ].rename( columns={'date': 'time'}, inplace = False )
+            result =  gage_data.hvplot() # * rdata_graph
             logger.info(f"*** overlay_graph: {result}")
             return result
 
