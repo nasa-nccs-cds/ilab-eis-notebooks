@@ -95,9 +95,11 @@ class LISGageDataset:
             idx = index[0]
             lon, lat = self.header['lon'][idx], self.header['lat'][idx]
             logger.info( f"routing_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
-            rdata_graph = self._routing_data.var_graph(vname, lon, lat, index='date')
-            gage_data: pd.DataFrame = self._gage_data[ idx ]
-            result =  gage_data.hvplot() * rdata_graph
+            streamflow_graph = self._routing_data.var_graph(vname, lon, lat, index='date')
+            gage_data_graph = self._gage_data[ idx ].hvplot()
+            logger.info(f"*** streamflow_graph: {streamflow_graph}")
+            logger.info(f"*** gage_data_plot: {gage_data_graph}")
+            result =  gage_data_graph * streamflow_graph
             logger.info(f"*** overlay_graph: {result}")
             return result
 
