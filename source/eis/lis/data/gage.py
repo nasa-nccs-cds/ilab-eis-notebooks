@@ -104,6 +104,7 @@ class LISGageDataset:
         lon, lat = self.header['lon'][idx], self.header['lat'][idx]
         logger.info( f"routing_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
         streamflow_data: xa.DataArray = self._routing_data.var_data( vname, lon, lat )
+        logger.info(f"streamflow_data: shape = {streamflow_data.shape}, data = {streamflow_data[:]}")
         svname = streamflow_data.attrs['vname']
         gage_data: xa.DataArray = self.xa_gage_data( idx )
         ( streamflow_adata, gage_adata ) = xa.align( streamflow_data, gage_data )
@@ -111,7 +112,7 @@ class LISGageDataset:
         if null_data:
             self._null_plot = xa.zeros_like(gage_adata).hvplot( title=f"No Gages")
             return self._null_plot
-        return streamflow_adata.hvplot(title=svname) * gage_adata.hvplot(title=f"Gage[{idx}]")
+        return gage_adata.hvplot(title=f"Gage[{idx}]")
 
     def add_gage_file( self, filepath: str ):
         gage_id = filepath.split('/')[-1].strip('.txt')
