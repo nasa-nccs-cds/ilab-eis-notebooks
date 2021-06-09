@@ -95,8 +95,8 @@ class LISGageDataset:
             lon, lat = self.header['lon'][idx], self.header['lat'][idx]
             logger.info( f"routing_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
             rdata_graph = self._routing_data.var_graph(vname, lon, lat)
-            gage_data: pd.DataFrame = self._gage_data[ idx ]
-            result =  rdata_graph # gage_data.hvplot( title=f"Gage[{idx}]") * rdata_graph
+            gage_data: pd.DataFrame = self._gage_data[ idx ].rename( index={'date': 'time'})
+            result =  gage_data.hvplot() * rdata_graph
             logger.info(f"*** overlay_graph: {result}")
             return result
 
