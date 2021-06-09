@@ -75,27 +75,28 @@ class LISGageDataset:
         size  = kwargs.pop( 'size', 10 )
         tools = kwargs.pop( 'tools', [ 'tap', 'hover' ] )
         self._routing_data = routing_data
+        var_select = pn.widgets.Select(options=routing_data.var_names, value='Streamflow_tavg', name="LIS Variable List")
+        var_stream = Params( var_select, ['value'], rename={ 'value': 'vname' } )
         pts_opts = gv.opts.Points( color=color, size=size, tools=tools, nonselection_fill_alpha=0.2, nonselection_line_alpha=0.6,  **kwargs )
         tiles = gv.tile_sources.EsriImagery()
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         select_stream = Selection1D( default=[0], source=dpoints )
-        line = hv.DynamicMap( self.routing_data_graph, streams=[select_stream] )
-        return pn.Row( tiles * dpoints, line ) # pn.Column(var_select, line))
+        line = hv.DynamicMap( self.routing_data_graph, streams=[ select_stream, var_stream ] )
+        return pn.Row( tiles * dpoints, pn.Column(var_select, line) )
 
     @exception_handled
-    def routing_data_graph( self, index: List[int] ):
+    def routing_data_graph( self, index: List[int], vname: str ):
         logger = eis3().get_logger()
         if (index is None) or (len(index) == 0):
             gage_data: pd.DataFrame =  self._null_data
             return gage_data.hvplot(title=f"No Gage")
         else:
             idx = index[0]
-            vname = 'Streamflow_tavg'
             lon, lat = self.header['lon'][idx], self.header['lat'][idx]
             logger.info( f"routing_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
             rdata_graph = self._routing_data.var_graph(vname, lon, lat)
             gage_data: pd.DataFrame = self._gage_data[ idx ]
-            result =  gage_data.hvplot( title=f"Gage[{idx}]") * rdata_graph
+            result =  rdata_graph # gage_data.hvplot( title=f"Gage[{idx}]") * rdata_graph
             logger.info(f"*** overlay_graph: {result}")
             return result
 
