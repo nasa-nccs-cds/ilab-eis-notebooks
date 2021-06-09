@@ -77,7 +77,7 @@ class LISGageDataset:
         tiles = gv.tile_sources.EsriImagery()
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         select_stream = Selection1D( default=[0], source=dpoints )
-        line = hv.DynamicMap( self.routing_data_graph, streams=[select_stream] )
+        line = hv.DynamicMap( self.gage_data_graph, streams=[select_stream] )
         return pn.Row( tiles * dpoints, line ) # pn.Column(var_select, line))
 
     @exception_handled
