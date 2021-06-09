@@ -83,7 +83,7 @@ class LISRoutingData:
         logger.info( f" -->> var_data[{vname}]: shape = {var_data.shape}, dims={var_data.dims}" )
         gdata = var_data.isel( lon= ics['lon'], lat= ics['lat'] )
         logger.info(f" -->> gdata[{vname}]: shape = {gdata.shape}, dims={gdata.dims}")
-        gdata.compute()
+#        gdata.compute()
         t1 = time.time()
         logger.info(f"Result exec times> read: {t1 - t0}, plot: {time.time() - t1} sec")
         graph_plot = gdata.hvplot(title=vname)
