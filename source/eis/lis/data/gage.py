@@ -20,7 +20,7 @@ class LISGageDataset:
         idtype = kwargs.get( 'idtype', str )
         geocols = kwargs.get( 'geom', dict( x=3, y=4 ) )
         datacols = kwargs.get( 'dcols', [] )
-        self._null_data = None
+        self._null_plot = None
         usecols = [ idcol, geocols['x'], geocols['y'] ] + datacols
         self.header: pd.DataFrame = pd.read_csv( header_file, usecols=usecols, delim_whitespace=True, names=['id', 'lon', 'lat'], dtype={'id': idtype} )
         self._gage_data: List[pd.DataFrame] = []
@@ -60,7 +60,7 @@ class LISGageDataset:
     def gage_data_graph( self, index: List[int] ):
         logger = eis3().get_logger()
         if (index is None) or (len(index) == 0):
-            gage_data: pd.DataFrame =  self._null_data
+            gage_data: pd.DataFrame =  self._null_plot
             return gage_data.hvplot(title=f"No Gage")
         else:
             idx = index[0]
@@ -95,8 +95,8 @@ class LISGageDataset:
         logger = eis3().get_logger()
         null_data = False
         if (index is None) or (len(index) == 0):
-            if self._null_data is not None:
-                return self._null_data
+            if self._null_plot is not None:
+                return self._null_plot
             null_data = True
             idx = 0
         else:
@@ -108,8 +108,8 @@ class LISGageDataset:
         gage_data: xa.DataArray = self.xa_gage_data( idx )
         ( streamflow_adata, gage_adata ) = xa.align( streamflow_data, gage_data )
         if null_data:
-            self._null_data = xa.zeros_like( gage_adata )
-            return self._null_data
+            self._null_plot = xa.zeros_like(gage_adata).hvplot("time", title=f"No Gages")
+            return self._null_plot
         return streamflow_adata.hvplot("time",title=svname) * gage_adata.hvplot("time",title=f"Gage[{idx}]")
 
     def add_gage_file( self, filepath: str ):
