@@ -12,6 +12,8 @@ import panel as pn
 import logging, pandas as pd
 import geopandas as gpd
 from eis.smce import eis3
+import hvplot.pandas
+import hvplot.xarray
 
 class LISRoutingData:
 
@@ -72,20 +74,21 @@ class LISRoutingData:
                 raise err
         return hv.DynamicMap( vmap, streams=streams )
 
-    @exception_handled
     def var_graph( self, vname: str, x: float, y: float ):
         logger = eis3().get_logger()
         t0 = time.time()
         ics = self.get_indices(x, y)
+        var_data = self.dset[vname]
         logger.info( f"Plotting var_graph[{vname}]: lon={x} ({ics['lon']}), lat={y} ({ics['lat']})")
-        gdata = self.dset[vname].isel( lon= ics['lon'], lat= ics['lat'] )
+        logger.info( f" -->> var_data[{vname}]: shape = {var_data.shape}, dims={var_data.dims}" )
+        gdata = var_data.isel( lon= ics['lon'], lat= ics['lat'] )
         gdata.compute()
         t1 = time.time()
         graph_plot = gdata.hvplot(title=vname)
         logger.info( f"Result shape = {gdata.shape}, exec times> read: {t1-t0}, plot: {time.time()-t1} sec" )
         return graph_plot
 
-
+    @exception_handled
     def dvar_graph( self, streams ) -> hv.DynamicMap:
         return hv.DynamicMap( self.var_graph, streams=streams )
 
