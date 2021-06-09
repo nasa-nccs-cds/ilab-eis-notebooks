@@ -72,15 +72,16 @@ class LISGageDataset:
         color = kwargs.pop( 'color', 'red' )
         size  = kwargs.pop( 'size', 10 )
         tools = kwargs.pop( 'tools', [ 'tap', 'hover' ] )
+        self._routing_data = routing_data
         pts_opts = gv.opts.Points( color=color, size=size, tools=tools, nonselection_fill_alpha=0.2, nonselection_line_alpha=0.6,  **kwargs )
         tiles = gv.tile_sources.EsriImagery()
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         select_stream = Selection1D( default=[0], source=dpoints )
-        line = hv.DynamicMap( partial( self.routing_data_graph, routing_data ), streams=[select_stream] )
+        line = hv.DynamicMap( self.routing_data_graph, streams=[select_stream] )
         return pn.Row( tiles * dpoints, line ) # pn.Column(var_select, line))
 
     @exception_handled
-    def routing_data_graph( self, routing_data: LISRoutingData, index: List[int] ):
+    def routing_data_graph( self, index: List[int] ):
         logger = eis3().get_logger()
         if (index is None) or (len(index) == 0):
             gage_data: pd.DataFrame =  self._null_data
@@ -89,8 +90,8 @@ class LISGageDataset:
             idx = index[0]
             vname = 'Streamflow_tavg'
             lon, lat = self.header['lon'][idx], self.header['lat'][idx]
-            rdata_graph = routing_data.var_graph( vname, lon, lat )
-            logger.info( f"gage_data_graph: index = {idx}, lon: {lon}, lat: {lat}, graph: {rdata_graph}")
+            rdata_graph = self._routing_data.var_graph( vname, lon, lat )
+            logger.info( f"routing_data_graph: index = {idx}, lon: {lon}, lat: {lat}, graph: {rdata_graph}")
             gage_data_graph = self._gage_data[ idx ].hvplot( title=f"Gage[{idx}]")
             return gage_data_graph # * rdata_graph
 
