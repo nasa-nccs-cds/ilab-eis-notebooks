@@ -1,10 +1,10 @@
 import pandas as pd
 from typing import List, Union, Dict, Callable, Tuple, Optional, Any, Type, Mapping, Hashable
 from holoviews.streams import Selection1D, Params
-import matplotlib.pyplot as plt
 import panel as pn
-from matplotlib.axes import SubplotBase
+from functools import partial
 import geopandas as gpd
+from eis.lis.data.routing import LISRoutingData
 import numpy as np
 import geoviews as gv
 import holoviews as hv
@@ -57,6 +57,21 @@ class LISGageDataset:
             gage_data: pd.DataFrame = self._gage_data[ idx ]
             return gage_data.hvplot( title=f"Gage[{idx}]")
 
+    @exception_handled
+    def routing_data_graph( self, routing_data: LISRoutingData, index: List[int] ):
+        logger = eis3().get_logger()
+        if (index is None) or (len(index) == 0):
+            gage_data: pd.DataFrame =  self._null_data
+            return gage_data.hvplot(title=f"No Gage")
+        else:
+            idx = index[0]
+            vname = 'Streamflow_tavg'
+            lon, lat = self.header['lon'][idx], self.header['lat'][idx]
+            rdata_graph = routing_data.var_graph( vname, lon, lat )
+            logger.info( f"gage_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
+            gage_data: pd.DataFrame = self._gage_data[ idx ]
+            return ( gage_data * rdata_graph ).hvplot( title=f"Gage[{idx}]")
+
     def plot(self, **kwargs ):
         color = kwargs.pop( 'color', 'red' )
         size  = kwargs.pop( 'size', 10 )
@@ -66,6 +81,17 @@ class LISGageDataset:
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         select_stream = Selection1D( default=[0], source=dpoints )
         line = hv.DynamicMap( self.gage_data_graph, streams=[select_stream] )
+        return pn.Row( tiles * dpoints, line ) # pn.Column(var_select, line))
+
+    def plot_routing_data(self, routing_data: LISRoutingData, **kwargs ):
+        color = kwargs.pop( 'color', 'red' )
+        size  = kwargs.pop( 'size', 10 )
+        tools = kwargs.pop( 'tools', [ 'tap', 'hover' ] )
+        pts_opts = gv.opts.Points( color=color, size=size, tools=tools, nonselection_fill_alpha=0.2, nonselection_line_alpha=0.6,  **kwargs )
+        tiles = gv.tile_sources.EsriImagery()
+        dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
+        select_stream = Selection1D( default=[0], source=dpoints )
+        line = hv.DynamicMap( partial( self.gage_data_graph, routing_data ), streams=[select_stream] )
         return pn.Row( tiles * dpoints, line ) # pn.Column(var_select, line))
 
     def add_gage_file( self, filepath: str ):

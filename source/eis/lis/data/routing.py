@@ -73,8 +73,7 @@ class LISRoutingData:
         return hv.DynamicMap( vmap, streams=streams )
 
     @exception_handled
-    def var_graph( self, streams ) -> hv.DynamicMap:
-        def vgraph( vname: str, x: float, y: float ):
+    def var_graph( self, vname: str, x: float, y: float ):
             logger = eis3().get_logger()
             try:
                 t0 = time.time()
@@ -89,7 +88,9 @@ class LISRoutingData:
             except Exception as err:
                 logger.error(f"Graph plot generated exception: {err}\n{traceback.format_exc()}")
                 raise err
-        return hv.DynamicMap( vgraph, streams=streams )
+
+    def dvar_graph( self, streams ) -> hv.DynamicMap:
+        return hv.DynamicMap( self.var_graph, streams=streams )
 
     @exception_handled
     def plot(self):
@@ -97,7 +98,7 @@ class LISRoutingData:
         var_stream = Params( var_select, ['value'], rename={ 'value': 'vname' } )
         varmap = self.var_image(streams=[var_stream])
         point_stream = Tap( x=self._xc, y=self._yc, source=varmap )
-        vargraph = self.var_graph( [var_stream, point_stream] )
+        vargraph = self.dvar_graph( [var_stream, point_stream] )
         return pn.Row( varmap, pn.Column( var_select, vargraph ) )
 
     @exception_handled
