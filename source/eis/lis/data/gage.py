@@ -68,9 +68,9 @@ class LISGageDataset:
             vname = 'Streamflow_tavg'
             lon, lat = self.header['lon'][idx], self.header['lat'][idx]
             rdata_graph = routing_data.var_graph( vname, lon, lat )
-            logger.info( f"gage_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
-            gage_data: pd.DataFrame = self._gage_data[ idx ]
-            return ( gage_data * rdata_graph ).hvplot( title=f"Gage[{idx}]")
+            logger.info( f"gage_data_graph: index = {idx}, lon: {lon}, lat: {lat}, graph: {rdata_graph}")
+            gage_data_graph = self._gage_data[ idx ].hvplot( title=f"Gage[{idx}]")
+            return gage_data_graph * rdata_graph
 
     def plot(self, **kwargs ):
         color = kwargs.pop( 'color', 'red' )
