@@ -82,32 +82,40 @@ class LISGageDataset:
         tiles = gv.tile_sources.EsriImagery()
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         select_stream = Selection1D( default=[0], source=dpoints )
-        gage_graph = hv.DynamicMap( self.gage_data_graph, streams=[ select_stream ] )
-        routing_graph = hv.DynamicMap(self.routing_data_graph, streams=[select_stream, var_stream ])
-        return pn.Row( tiles * dpoints, pn.Column( var_select, gage_graph * routing_graph ) )
+        routing_graph = hv.DynamicMap(self.routing_plus_gage_data_graph, streams=[select_stream, var_stream ])
+        return pn.Row( tiles * dpoints, pn.Column( var_select, routing_graph ) )
+
+    def xa_gage_data(self, gage_index: int ) -> xa.DataArray:
+        gage_dataset: xa.Dataset = self._gage_data[gage_index].to_xarray()
+        dvars = list(gage_dataset.data_vars.keys())
+        return gage_dataset[dvars[0]]
 
     @exception_handled
-    def routing_data_graph( self, index: List[int], vname: str ):
+    def routing_plus_gage_data_graph( self, index: List[int], vname: str ):
         logger = eis3().get_logger()
+        null_data = False
         if (index is None) or (len(index) == 0):
-            null_data: pd.DataFrame =  self._null_data
-            return null_data.hvplot()
+            if self._null_data is not None:
+                return self._null_data
+            null_data = True
+            idx = 0
         else:
             idx = index[0]
-            lon, lat = self.header['lon'][idx], self.header['lat'][idx]
-            logger.info( f"routing_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
-            streamflow_data = self._routing_data.var_graph( vname, lon, lat )
-            logger.info(f"*** streamflow_data: {streamflow_data}, shape = {streamflow_data.shape}")
-            streamflow_graph: hv.Curve = streamflow_data.hvplot( "time", title=streamflow_data.attrs['vname'] )
-            logger.info(f"*** streamflow_graph: {streamflow_graph}")
-            return streamflow_graph
+        lon, lat = self.header['lon'][idx], self.header['lat'][idx]
+        logger.info( f"routing_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
+        streamflow_data: xa.DataArray = self._routing_data.var_data( vname, lon, lat )
+        svname = streamflow_data.attrs['vname']
+        gage_data: xa.DataArray = self.xa_gage_data( idx )
+        ( streamflow_adata, gage_adata ) = xa.align( streamflow_data, gage_data )
+        if null_data:
+            self._null_data = xa.zeros_like( gage_adata )
+            return self._null_data
+        return streamflow_adata.hvplot("time",title=svname) * gage_adata.hvplot("time",title=f"Gage[{idx}]")
 
     def add_gage_file( self, filepath: str ):
         gage_id = filepath.split('/')[-1].strip('.txt')
         df = pd.read_csv( filepath, names=['date', gage_id], delim_whitespace=True,  parse_dates=['date'], index_col='date' )
         self._gage_data.append( df )
-        if self._null_data is None:
-            self._null_data = self.get_empty_dataframe(df)
 
     def add_gage_files(self, gage_file_paths: Optional[List[str]] ):
         if gage_file_paths is not None:

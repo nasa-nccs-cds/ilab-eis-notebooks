@@ -9,6 +9,7 @@ from holoviews.streams import Selection1D, Params, Stream, param, Tap
 from typing import List, Union, Dict, Callable, Tuple, Optional, Any, Type, Mapping, Hashable
 import holoviews as hv
 import panel as pn
+import xarray as xa
 import logging, pandas as pd
 import geopandas as gpd
 from eis.smce import eis3
@@ -74,7 +75,7 @@ class LISRoutingData:
                 raise err
         return hv.DynamicMap( vmap, streams=streams )
 
-    def var_graph( self, vname: str, x: float, y: float ):
+    def var_data( self, vname: str, x: float, y: float ) -> xa.DataArray:
         logger = eis3().get_logger()
         t0 = time.time()
         ics = self.get_indices(x, y)
@@ -85,6 +86,9 @@ class LISRoutingData:
         logger.info(f"-->> gdata[{vname}] shape = {gdata.shape}, dims={gdata.dims}: read time= {t1 - t0}, plot time= {time.time() - t1} sec")
         gdata.attrs['vname'] = vname
         return gdata
+
+    def var_graph(self, vname: str, x: float, y: float) :
+        return self.var_data( vname, x, y ).hvplot( title=vname )
 
     @exception_handled
     def dvar_graph( self, streams ) -> hv.DynamicMap:
