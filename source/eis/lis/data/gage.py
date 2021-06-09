@@ -52,9 +52,8 @@ class LISGageDataset:
             return gage_data.hvplot(title=f"No Gage")
         else:
             idx = index[0]
-            gage_metadata = self.header.iloc( idx )
-            gxdata, gydata = gage_metadata['x'], gage_metadata['y']
-            logger.info( f"gage_data_graph: index = {idx}, data len = {len(self._gage_data)}, gxdata = {gxdata}")
+            lon, lat = self.header['lon'][idx], self.header['lat'][idx]
+            logger.info( f"gage_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
             gage_data: pd.DataFrame = self._gage_data[ idx ]
             return gage_data.hvplot( title=f"Gage[{idx}]")
 
