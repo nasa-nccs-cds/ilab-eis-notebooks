@@ -91,7 +91,7 @@ class LISGageDataset:
         tiles = gv.tile_sources.EsriImagery()
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         select_stream = Selection1D( default=[0], source=dpoints )
-        line = hv.DynamicMap( partial( self.gage_data_graph, routing_data ), streams=[select_stream] )
+        line = hv.DynamicMap( partial( self.routing_data_graph, routing_data ), streams=[select_stream] )
         return pn.Row( tiles * dpoints, line ) # pn.Column(var_select, line))
 
     def add_gage_file( self, filepath: str ):
