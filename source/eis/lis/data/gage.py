@@ -10,6 +10,7 @@ import geoviews as gv
 import holoviews as hv
 from eis.smce import eis3, exception_handled
 import hvplot.pandas
+import hvplot.xarray
 
 class LISGageDataset:
 
