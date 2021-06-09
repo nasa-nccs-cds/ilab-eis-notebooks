@@ -90,7 +90,7 @@ class LISGageDataset:
         logger = eis3().get_logger()
         if (index is None) or (len(index) == 0):
             gage_data: pd.DataFrame =  self._null_data
-            return gage_data.hvplot().rename( index={'date': 'time'})
+            return gage_data.rename( index={'date': 'time'}).hvplot()
         else:
             idx = index[0]
             lon, lat = self.header['lon'][idx], self.header['lat'][idx]
