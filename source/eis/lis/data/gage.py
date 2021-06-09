@@ -95,11 +95,11 @@ class LISGageDataset:
             idx = index[0]
             lon, lat = self.header['lon'][idx], self.header['lat'][idx]
             logger.info( f"routing_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
-            streamflow_graph = self._routing_data.var_graph(vname, lon, lat, index='date')
-            gage_data_graph = self._gage_data[ idx ].hvplot()
-            logger.info(f"*** streamflow_graph: {streamflow_graph}")
-            logger.info(f"*** gage_data_plot: {gage_data_graph}")
-            result =  gage_data_graph * streamflow_graph
+            streamflow_graph: hv.Curve = self._routing_data.var_graph(vname, lon, lat, index='date')
+            gage_data_graph: hv.Curve = self._gage_data[ idx ].hvplot( f"Gage data [{idx}]")
+            logger.info(f"*** streamflow_graph: {streamflow_graph}, shape = {streamflow_graph.shape}, extents = {streamflow_graph.extents}")
+            logger.info(f"*** gage_data_plot: {gage_data_graph}, shape = {gage_data_graph.shape}, extents = {gage_data_graph.extents}")
+            result =  gage_data_graph # * streamflow_graph
             logger.info(f"*** overlay_graph: {result}")
             return result
 
