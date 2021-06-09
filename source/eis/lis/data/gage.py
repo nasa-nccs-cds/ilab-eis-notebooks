@@ -81,31 +81,25 @@ class LISGageDataset:
         tiles = gv.tile_sources.EsriImagery()
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         select_stream = Selection1D( default=[0], source=dpoints )
-#        point_stream = Tap(x=self._xc, y=self._yc, source=tiles)
-        line = hv.DynamicMap( self.gage_data_graph, streams=[ select_stream ] ) # , var_stream ] )
-        return pn.Row( tiles * dpoints, pn.Column(var_select, line) )
+        gage_graph = hv.DynamicMap( self.gage_data_graph, streams=[ select_stream ] )
+        routing_graph = hv.DynamicMap(self.routing_data_graph, streams=[select_stream, var_stream ])
+        return pn.Row( tiles * dpoints, pn.Column( var_select, gage_graph * routing_graph ) )
 
     @exception_handled
     def routing_data_graph( self, index: List[int], vname: str ):
         logger = eis3().get_logger()
         if (index is None) or (len(index) == 0):
-            gage_data: pd.DataFrame =  self._null_data
-            return gage_data.hvplot()
+            null_data: pd.DataFrame =  self._null_data
+            return null_data.hvplot()
         else:
             idx = index[0]
             lon, lat = self.header['lon'][idx], self.header['lat'][idx]
             logger.info( f"routing_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
             streamflow_data = self._routing_data.var_graph( vname, lon, lat )
-            gege_data = self._gage_data[ idx ]
             logger.info(f"*** streamflow_data: {streamflow_data}, shape = {streamflow_data.shape}")
-            logger.info(f"*** gege_data: {gege_data}, shape = {gege_data.shape}")
             streamflow_graph: hv.Curve = streamflow_data.hvplot( "time", title=streamflow_data.attrs['vname'] )
-            gage_data_graph: hv.Curve = gege_data.hvplot( "time", title=f"Gage data [{idx}]")
-            logger.info(f"*** streamflow_graph: {streamflow_graph}, shape = {streamflow_graph.shape}")
-            logger.info(f"*** gage_data_plot: {gage_data_graph}, shape = {gage_data_graph.shape}")
-            result =  gage_data_graph * streamflow_graph
-            logger.info(f"*** overlay_graph: {result}")
-            return result
+            logger.info(f"*** streamflow_graph: {streamflow_graph}")
+            return streamflow_graph
 
     @exception_handled
     def routing_data_graph1( self, index: List[int] ):
