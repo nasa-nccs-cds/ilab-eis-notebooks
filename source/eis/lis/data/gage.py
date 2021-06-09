@@ -90,14 +90,14 @@ class LISGageDataset:
         logger = eis3().get_logger()
         if (index is None) or (len(index) == 0):
             gage_data: pd.DataFrame =  self._null_data
-            return gage_data.rename( index={'date': 'time'}).hvplot()
+            return gage_data.hvplot()
         else:
             idx = index[0]
             lon, lat = self.header['lon'][idx], self.header['lat'][idx]
             logger.info( f"routing_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
-            rdata_graph = self._routing_data.var_graph(vname, lon, lat)
-            gage_data: pd.DataFrame = self._gage_data[ idx ].rename( columns={'date': 'time'}, inplace = False )
-            result =  gage_data.hvplot() # * rdata_graph
+            rdata_graph = self._routing_data.var_graph(vname, lon, lat, index='date')
+            gage_data: pd.DataFrame = self._gage_data[ idx ]
+            result =  gage_data.hvplot() * rdata_graph
             logger.info(f"*** overlay_graph: {result}")
             return result
 

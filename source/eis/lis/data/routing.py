@@ -74,12 +74,15 @@ class LISRoutingData:
                 raise err
         return hv.DynamicMap( vmap, streams=streams )
 
-    def var_graph( self, vname: str, x: float, y: float ):
+    def var_graph( self, vname: str, x: float, y: float, **kwargs ):
         logger = eis3().get_logger()
+        index_name = kwargs.get('index',None)
         t0 = time.time()
         ics = self.get_indices(x, y)
         logger.info( f"Plotting var_graph[{vname}]: lon={x} ({ics['lon']}), lat={y} ({ics['lat']})")
         gdata = self.dset[vname].isel( lon= ics['lon'], lat= ics['lat'] )
+        if index_name is not None:
+            gdata = gdata.rename( time = index_name )
         gdata.compute()
         t1 = time.time()
         logger.info(f"-->> gdata[{vname}] shape = {gdata.shape}, dims={gdata.dims}: read time= {t1 - t0}, plot time= {time.time() - t1} sec")
