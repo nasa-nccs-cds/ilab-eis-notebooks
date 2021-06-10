@@ -36,6 +36,9 @@ class LISGageDataset:
         kdims = kwargs.pop( 'kdims', ['lon', 'lat'] )
         return gv.Points( self.header, kdims=kdims, vdims='id', **kwargs )
 
+    def getCoords(self, gage_index: int ) -> Dict[str,float]:
+        return dict( lon = self.header['lon'][gage_index], lat = self.header['lat'][gage_index] )
+
     def plot_map(self, **kwargs ):
         color = kwargs.pop( 'color', 'red' )
         size  = kwargs.pop( 'size', 10 )
