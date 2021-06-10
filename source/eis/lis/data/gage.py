@@ -4,7 +4,6 @@ from holoviews.streams import Selection1D, Params, Tap
 import panel as pn
 import xarray as xa
 import geopandas as gpd
-from eis.lis.data.routing import LISRoutingData
 import numpy as np
 import geoviews as gv
 import holoviews as hv
@@ -57,7 +56,7 @@ class LISGageDataset:
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         select_stream = Selection1D( default=[0], source=dpoints )
         line = hv.DynamicMap( self.gage_data_graph, streams=[select_stream] )
-        return pn.Row( tiles * dpoints, line ) # pn.Column(var_select, line))
+        return pn.Row( tiles * dpoints, line )
 
     @exception_handled
     def gage_data_graph( self, index: List[int] ):
@@ -73,53 +72,10 @@ class LISGageDataset:
             dvars = list(gage_data.data_vars.keys())
             return gage_data[dvars[0]].hvplot( 'time', title=f"Gage[{idx}]")
 
-    @exception_handled
-    def plot_routing_data(self, routing_data: LISRoutingData, **kwargs ):
-        color = kwargs.pop( 'color', 'red' )
-        size  = kwargs.pop( 'size', 10 )
-        tools = kwargs.pop( 'tools', [ 'tap', 'hover' ] )
-        self._routing_data = routing_data
-        var_select = pn.widgets.Select(options=routing_data.var_names, value='Streamflow_tavg', name="LIS Variable List")
-        var_stream = Params( var_select, ['value'], rename={ 'value': 'vname' } )
-        pts_opts = gv.opts.Points( color=color, size=size, tools=tools, nonselection_fill_alpha=0.2, nonselection_line_alpha=0.6,  **kwargs )
-        tiles = gv.tile_sources.EsriImagery()
-        dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
-        select_stream = Selection1D( default=[0], source=dpoints )
-        routing_graph = hv.DynamicMap(self.routing_plus_gage_data_graph, streams=[select_stream, var_stream ])
-        return pn.Row( tiles * dpoints, pn.Column( var_select, routing_graph ) )
-
     def xa_gage_data(self, gage_index: int ) -> xa.DataArray:
         gage_dataset: xa.Dataset = self._gage_data[gage_index].to_xarray()
         dvars = list(gage_dataset.data_vars.keys())
         return gage_dataset[dvars[0]].rename( date="time" )
-
-    @exception_handled
-    def routing_plus_gage_data_graph( self, index: List[int], vname: str ):
-        logger = eis3().get_logger()
-        null_data = False
-        if (index is None) or (len(index) == 0):
-            if self._null_plot is not None:
-                return self._null_plot
-            null_data = True
-            idx = 0
-        else:
-            idx = index[0]
-        lon, lat = self.header['lon'][idx], self.header['lat'][idx]
-        logger.info( f"routing_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
-        streamflow_data: xa.DataArray = self._routing_data.var_data( vname, lon, lat )
-        logger.info(f"streamflow_data: shape = {streamflow_data.shape}, data = {streamflow_data[:]}")
-        svname = streamflow_data.attrs['vname']
-        gage_data: xa.DataArray = self.xa_gage_data( idx )
-        logger.info(f"gage_data: shape = {gage_data.shape}, data = {gage_data[:]}")
-        ( streamflow_adata, gage_adata ) = xa.align( streamflow_data, gage_data )
-        logger.info(f"\nstreamflow_adata: shape = {streamflow_adata.shape}, time = {streamflow_adata.coords['time'].values[:]}")
-        logger.info(f"\ngage_adata: shape = {gage_adata.shape}, time = {gage_adata.coords['time'].values[:]}")
-        if null_data:
-            self._null_plot = xa.zeros_like(gage_adata).hvplot( title=f"No Gages")
-            return self._null_plot
-        result =  streamflow_adata.hvplot() * gage_adata.hvplot()
-        logger.info(f"\noverlay: {result}")
-        return result
 
     def add_gage_file( self, filepath: str ):
         gage_id = filepath.split('/')[-1].strip('.txt')
