@@ -29,7 +29,7 @@ class LISCombinedDataset:
         self._null_routing_data = xa.zeros_like( routing_adata )
         self._null_gage_data = xa.zeros_like(gage_adata)
 
-    def get_routing_data(self, gage_index: int, varname: str, can_use_null_data: bool  ) -> xa.DataArray:
+    def get_routing_data(self, gage_index: int, varname: str, can_use_null_data: bool = False  ) -> xa.DataArray:
         if can_use_null_data and (self._null_routing_data is not None):
             return self._null_routing_data
         else:
@@ -37,7 +37,7 @@ class LISCombinedDataset:
             streamflow_data: xa.DataArray = self.routing_data.var_data(varname, coords['lon'], coords['lat'])
             return streamflow_data
 
-    def get_gage_data(self, gage_index: int, can_use_null_data: bool  ) -> xa.DataArray:
+    def get_gage_data(self, gage_index: int, can_use_null_data: bool = False  ) -> xa.DataArray:
         if can_use_null_data and (self._null_gage_data is not None):
             return self._null_gage_data
         else:
