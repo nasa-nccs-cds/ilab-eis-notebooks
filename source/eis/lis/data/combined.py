@@ -77,7 +77,6 @@ class LISCombinedDataset:
         color = kwargs.pop( 'color', 'red' )
         size  = kwargs.pop( 'size', 10 )
         tools = kwargs.pop( 'tools', [ 'tap', 'hover' ] )
-        overlay = kwargs.get( 'overlay', False )
         var_select = pn.widgets.Select(options=self.routing_data.var_names, value='Streamflow_tavg', name="LIS Variable List")
         var_stream = Params( var_select, ['value'], rename={ 'value': 'vname' } )
         pts_opts = gv.opts.Points( color=color, size=size, tools=tools, nonselection_fill_alpha=0.2, nonselection_line_alpha=0.6,  **kwargs )
@@ -86,6 +85,6 @@ class LISCombinedDataset:
         select_stream = Selection1D( default=[0], source=dpoints )
         routing_graph = hv.DynamicMap( self.routing_data_graph, streams=[select_stream, var_stream ])
         gage_graph = hv.DynamicMap( self.gage_data_graph, streams=[select_stream, var_stream] )
-        graphs = gage_graph * routing_graph if overlay else pn.Column( gage_graph, routing_graph )
+        graphs = pn.Column( gage_graph, routing_graph )
         return pn.Row( pn.Column( var_select, tiles * dpoints ), graphs )
 

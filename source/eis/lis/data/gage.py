@@ -47,6 +47,7 @@ class LISGageDataset:
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         return tiles * dpoints
 
+    @exception_handled
     def plot(self, **kwargs ):
         color = kwargs.pop( 'color', 'red' )
         size  = kwargs.pop( 'size', 10 )
@@ -55,8 +56,8 @@ class LISGageDataset:
         tiles = gv.tile_sources.EsriImagery()
         dpoints = hv.util.Dynamic( self.points.opts( pts_opts ) ).opts(height=400, width=600)
         select_stream = Selection1D( default=[0], source=dpoints )
-        line = hv.DynamicMap( self.gage_data_graph, streams=[select_stream] )
-        return pn.Row( tiles * dpoints, line )
+        gage_graph = hv.DynamicMap( self.gage_data_graph, streams=[select_stream] )
+        return pn.Row(  tiles * dpoints, gage_graph )
 
     @exception_handled
     def gage_data_graph( self, index: List[int] ):
@@ -65,12 +66,9 @@ class LISGageDataset:
             gage_data: pd.DataFrame =  self._null_plot
             return gage_data.hvplot(title=f"No Gage")
         else:
-            idx = index[0]
-            lon, lat = self.header['lon'][idx], self.header['lat'][idx]
-            logger.info( f"gage_data_graph: index = {idx}, lon: {lon}, lat: {lat}")
-            gage_data: xa.Dataset = self._gage_data[ idx ].to_xarray()
-            dvars = list(gage_data.data_vars.keys())
-            return gage_data[dvars[0]].hvplot( 'time', title=f"Gage[{idx}]")
+            gage_index = index[0]
+            gage_data: xa.DataArray = self.xa_gage_data( gage_index )
+            return gage_data.hvplot( title=f"Gage[{gage_index}]" )
 
     def xa_gage_data(self, gage_index: int ) -> xa.DataArray:
         gage_dataset: xa.Dataset = self._gage_data[gage_index].to_xarray()
