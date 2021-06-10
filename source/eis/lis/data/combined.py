@@ -18,6 +18,8 @@ class LISCombinedDataset:
     def __init__(self, gage_data: LISGageDataset, routing_data: LISRoutingData, **kwargs):
         self.gage_data = gage_data
         self.routing_data = routing_data
+        self._null_routing_data = None
+        self._null_gage_data = None
         self.init_null_data( **kwargs )
 
     def init_null_data(self, **kwargs ):
@@ -27,14 +29,28 @@ class LISCombinedDataset:
         self._null_routing_data = xa.zeros_like( routing_adata )
         self._null_gage_data = xa.zeros_like(gage_adata)
 
+    def get_routing_data(self, gage_index: int, varname: str, can_use_null_data: bool  ) -> xa.DataArray:
+        if can_use_null_data and (self._null_routing_data is not None):
+            return self._null_routing_data
+        else:
+            coords = self.gage_data.getCoords(gage_index)
+            streamflow_data: xa.DataArray = self.routing_data.var_data(varname, coords['lon'], coords['lat'])
+            return streamflow_data
+
+    def get_gage_data(self, gage_index: int, can_use_null_data: bool  ) -> xa.DataArray:
+        if can_use_null_data and (self._null_gage_data is not None):
+            return self._null_gage_data
+        else:
+            gage_data: xa.DataArray = self.gage_data.xa_gage_data( gage_index )
+            return gage_data
+
     def get_aligned_data(self, gage_index: int, vname: str = None  ) -> Tuple[xa.DataArray, ...]:
         if (vname is None):
             streamflow_data: xa.DataArray = self._null_routing_data
             gage_data: xa.DataArray = self.gage_data.xa_gage_data( gage_index )
         else:
-            coords = self.gage_data.getCoords( gage_index )
-            streamflow_data: xa.DataArray = self.routing_data.var_data( vname, coords['lon'], coords['lat'] )
-            gage_data = self._null_gage_data
+            streamflow_data: xa.DataArray = self.get_routing_data( gage_index, vname, False )
+            gage_data = self.get_gage_data( gage_index, True )
         return xa.align( streamflow_data, gage_data )
 
     @exception_handled
