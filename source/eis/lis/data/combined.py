@@ -37,7 +37,7 @@ class LISCombinedDataset:
     def routing_data_graph( self, index: List[int], vname: str ):
         logger = eis3().get_logger()
         if (index is None) or (len(index) == 0):
-            return self._null_routing_data
+            return self._null_routing_data.hvplot(title=f"No Gages")
         gage_index = index[0]
         (routing_adata, gage_adata) = self.get_aligned_data( gage_index, vname )
         return routing_adata.hvplot( title = vname )
@@ -46,7 +46,7 @@ class LISCombinedDataset:
     def gage_data_graph(self, index: List[int], vname: str):
         logger = eis3().get_logger()
         if (index is None) or (len(index) == 0):
-            return self._null_routing_data
+            return self._null_gage_data.hvplot(title=f"No Gages")
         else:
             gage_index = index[0]
             (routing_adata, gage_adata) = self.get_aligned_data( gage_index, vname )
