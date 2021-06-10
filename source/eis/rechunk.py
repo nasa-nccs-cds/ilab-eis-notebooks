@@ -56,13 +56,14 @@ class Rechunker:
                 target_store = s3m().get_store( f"{target_store}.zarr", "w")
             print( f"Writing result to {target_store} with max-memory-per-worker set to {max_memory} bytes" )
         temp_store =  f"{temp_dir}/{self.name}.zarr"
-        if clear_cache:
-            shutil.rmtree( temp_store, ignore_errors= True )
+        shutil.rmtree( temp_store, ignore_errors= True )
         print(f"Using temp_store: {temp_store} with chunks = {chunks}")
         rechunked: Rechunked = rechunk( self.dset, chunks, max_memory, target_store=target_store, temp_store=temp_store, **kwargs )
         rv = rechunked.execute()
         t1 = time.time()
         print( f"Rechunking completed in {(t1-t0)/60.0} min.")
+        if clear_cache:
+            self.clear_cache( **kwargs )
         return rv
 
     def clear_cache(self, **kwargs ):
