@@ -19,7 +19,7 @@ class LISGageDataset:
         idtype = kwargs.get( 'idtype', str )
         geocols = kwargs.get( 'geom', dict( x=3, y=4 ) )
         datacols = kwargs.get( 'dcols', [] )
-        self._null_plot = None
+        self._null_plot: xa.DataArray = None
         usecols = [ idcol, geocols['x'], geocols['y'] ] + datacols
         self.header: pd.DataFrame = pd.read_csv( header_file, usecols=usecols, delim_whitespace=True, names=['id', 'lon', 'lat'], dtype={'id': idtype} )
         self._gage_data: List[pd.DataFrame] = []
@@ -30,7 +30,7 @@ class LISGageDataset:
     def init_null_data(self, **kwargs ):
         gage_index: int = kwargs.get( 'gage_index', 0 )
         gage_data = self.xa_gage_data( gage_index )
-        self._null_gage_data = xa.zeros_like( gage_data )
+        self._null_plot = xa.zeros_like( gage_data )
 
     @property
     def gage_map(self) -> gpd.GeoDataFrame:
@@ -69,8 +69,7 @@ class LISGageDataset:
     def gage_data_graph( self, index: List[int] ):
         logger = eis3().get_logger()
         if (index is None) or (len(index) == 0):
-            gage_data: pd.DataFrame =  self._null_plot
-            return gage_data.hvplot(title=f"No Gage")
+            return self._null_plot.hvplot(title=f"No Gage")
         else:
             gage_index = index[0]
             gage_data: xa.DataArray = self.xa_gage_data( gage_index )
