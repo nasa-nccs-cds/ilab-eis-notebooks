@@ -45,7 +45,8 @@ class Rechunker:
         t0 = time.time()
         max_memory =   kwargs.pop( 'max_memory', 100 ) * 1000 * 1000
         target_store = kwargs.pop( 'target_store',  f"{self.data_dir}/{self.name}.zarr" )
-        temp_dir =   kwargs.pop( 'temp_dir', self.cache_dir )
+        temp_dir   =   kwargs.pop( 'temp_dir', self.cache_dir )
+        clear_cache = kwargs.get('clear_cache', False)
         chunks = self.get_chunks( chunk_sizes )
         if isinstance( target_store, str ):
             if target_store.startswith("/"):
@@ -54,14 +55,20 @@ class Rechunker:
             elif target_store.startswith("s3:"):
                 target_store = s3m().get_store( f"{target_store}.zarr", "w")
             print( f"Writing result to {target_store} with max-memory-per-worker set to {max_memory} bytes" )
-        if isinstance( temp_dir, str):
-            temp_store =  f"{temp_dir}/{self.name}.zarr"
+        temp_store =  f"{temp_dir}/{self.name}.zarr"
+        if clear_cache:
             shutil.rmtree( temp_store, ignore_errors= True )
-            print(f"Using temp_store: {temp_store} with chunks = {chunks}")
+        print(f"Using temp_store: {temp_store} with chunks = {chunks}")
         rechunked: Rechunked = rechunk( self.dset, chunks, max_memory, target_store=target_store, temp_store=temp_store, **kwargs )
         rv = rechunked.execute()
         t1 = time.time()
-        print( f"Rechunking completed in {(t1-t0)/60.0} min.  Clearing cache...")
+        print( f"Rechunking completed in {(t1-t0)/60.0} min.")
+        return rv
+
+    def clear_cache(self, **kwargs ):
+        print("Clearing Cache...")
+        temp_dir = kwargs.pop('temp_dir', self.cache_dir)
+        temp_store = f"{temp_dir}/{self.name}.zarr"
+        t1 = time.time()
         shutil.rmtree( temp_store, ignore_errors=True )
         print(f"Cache-clearing completed in {(time.time() - t1) / 60.0} min. \n\n FINALLY ALL DONE!" )
-        return rv
