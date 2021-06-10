@@ -50,7 +50,7 @@ class LISCombinedDataset:
         else:
             gage_index = index[0]
             (routing_adata, gage_adata) = self.get_aligned_data( gage_index, vname )
-            return gage_adata.hvplot(title=f"Gage[{gage_index}]")
+            return gage_adata.hvplot(title=f"Gage[{gage_index}]").opts( ylabel='Gage flow' )
 
     @exception_handled
     def plot(self, **kwargs ):
