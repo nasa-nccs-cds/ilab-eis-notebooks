@@ -120,8 +120,8 @@ class LISRoutingData:
     def _add_latlon_coords(self, input_dset: xr.Dataset) -> xr.Dataset:
         """Adds lat/lon as dimensions and coordinates to an xarray.Dataset object."""
 
-        self._dx = round( float( input_dset.attrs['DX'] ), 3)
-        self._dy = round( float( input_dset.attrs['DY'] ), 3)
+        self._dx = round( float( input_dset.attrs['DX'] ), 3 )
+        self._dy = round( float( input_dset.attrs['DY'] ), 3 )
         self._nx = len( input_dset['east_west'] )
         self._ny = len( input_dset['north_south'] )
         self._y0 = round( float( input_dset.attrs['SOUTH_WEST_CORNER_LAT'] ), 3)
