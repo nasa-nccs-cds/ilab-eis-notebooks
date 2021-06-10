@@ -27,10 +27,14 @@ class LISCombinedDataset:
         self._null_routing_data = xa.zeros_like( routing_adata )
         self._null_gage_data = xa.zeros_like(gage_adata)
 
-    def get_aligned_data(self, gage_index: int, vname: str  ) -> Tuple[xa.DataArray, ...]:
-        coords = self.gage_data.getCoords( gage_index )
-        streamflow_data: xa.DataArray = self.routing_data.var_data( vname, coords['lon'], coords['lat'] )
-        gage_data: xa.DataArray = self.gage_data.xa_gage_data( gage_index )
+    def get_aligned_data(self, gage_index: int, vname: str = None  ) -> Tuple[xa.DataArray, ...]:
+        if (vname is None):
+            streamflow_data: xa.DataArray = self._null_routing_data
+            gage_data: xa.DataArray = self.gage_data.xa_gage_data( gage_index )
+        else:
+            coords = self.gage_data.getCoords( gage_index )
+            streamflow_data: xa.DataArray = self.routing_data.var_data( vname, coords['lon'], coords['lat'] )
+            gage_data = self._null_gage_data
         return xa.align( streamflow_data, gage_data )
 
     @exception_handled
@@ -49,7 +53,7 @@ class LISCombinedDataset:
             return self._null_gage_data.hvplot(title=f"No Gages")
         else:
             gage_index = index[0]
-            (routing_adata, gage_adata) = self.get_aligned_data( gage_index, vname )
+            (routing_adata, gage_adata) = self.get_aligned_data( gage_index )
             return gage_adata.hvplot(title=f"Gage[{gage_index}]").opts( ylabel='Gage flow' )
 
     @exception_handled
