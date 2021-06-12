@@ -28,6 +28,7 @@ class LISRoutingData:
 
     def add_variable(self, name: str, variable: xa.DataArray ):
         self.dset.assign( {name: variable} )
+        self._vnames = None
 
     @classmethod
     def from_smce( cls, bucket: str, key: str ) -> "LISRoutingData":
