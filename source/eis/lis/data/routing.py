@@ -26,6 +26,9 @@ class LISRoutingData:
     #    self._loc = dset[['lon','lat']].isel(time=0).to_dataframe().reset_index().dropna()
     #   self._pts: np.ndarray = self._loc[['lon', 'lat']].to_numpy()
 
+    def add_variable(self, name: str, variable: xa.DataArray ):
+        self.dset.assign( {name: variable} )
+
     @classmethod
     def from_smce( cls, bucket: str, key: str ) -> "LISRoutingData":
         dset = eis3().get_zarr_dataset(bucket, key)
@@ -41,9 +44,9 @@ class LISRoutingData:
     #     return  [ int(self._loc['east_west'].iloc[idx]), int(self._loc['north_south'].iloc[idx]) ]
 
     @property
-    def var_names(self):
+    def var_names(self) -> List[str]:
         if self._vnames is None:
-            self._vnames = [ k for k,v in self.dset.variables.items() if v.ndim == 3 ]
+            self._vnames = [ str(k) for k,v in self.dset.variables.items() if v.ndim == 3 ]
         return self._vnames
 
     def dynamic_map( self, **kwargs  ):

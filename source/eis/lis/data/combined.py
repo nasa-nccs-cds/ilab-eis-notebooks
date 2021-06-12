@@ -22,6 +22,16 @@ class LISCombinedDataset:
         self._null_gage_data = None
         self.init_null_data( **kwargs )
 
+    def add_variable(self, name: str, variable: xa.DataArray ):
+        self.routing_data.add_variable( name, variable )
+
+    def get_variable(self, name: str ) -> Optional[xa.DataArray]:
+        return self.routing_data.dset[ name ]
+
+    @property
+    def var_names(self) -> List[str]:
+        return self.routing_data.var_names
+
     def init_null_data(self, **kwargs ):
         gage_index: int = kwargs.get( 'gage_index', 0 )
         vname = kwargs.get( 'varname', self.routing_data.var_names[0] )
