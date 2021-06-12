@@ -27,7 +27,7 @@ class LISRoutingData:
     #   self._pts: np.ndarray = self._loc[['lon', 'lat']].to_numpy()
 
     def add_variable(self, name: str, variable: xa.DataArray ):
-        self.dset.assign( {name: variable} )
+        self.dset = self.dset.assign( {name: variable} )
         self._vnames = None
 
     @classmethod
